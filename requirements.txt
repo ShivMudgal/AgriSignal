@@ -1,0 +1,13 @@
+earthengine-api
+geemap
+pandas
+numpy
+requests
+python-dotenv
+statsmodels
+scikit-learn
+xgboost
+plotly
+folium
+streamlit
+ipykernel
