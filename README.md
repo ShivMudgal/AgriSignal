@@ -17,7 +17,7 @@ Still in progress.
 ```
 python -m venv .venv
 .venv\Scripts\activate
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 ```
 
 Copy `.env.example` to `.env` and add your Earth Engine project id, then run:
@@ -26,3 +26,5 @@ Copy `.env.example` to `.env` and add your Earth Engine project id, then run:
 earthengine authenticate
 python src/check_gee.py
 ```
+
+`requirements.txt` has only what the app needs to run. `requirements-dev.txt` adds formatting, testing and notebook tools.
