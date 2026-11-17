@@ -5,3 +5,4 @@ __pycache__/
 db/*.db
 .ipynb_checkpoints/
 data/raw/ndvi/
+data/raw/wpi/
