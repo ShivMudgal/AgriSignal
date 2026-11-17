@@ -32,9 +32,9 @@ def main() -> None:
     init_earth_engine(config.GEE_PROJECT)
     print(f"Connected to Earth Engine (project: {config.GEE_PROJECT})")
 
-    punjab = get_state(config.COUNTRY, config.STATE)
+    punjab = get_state(config.COUNTRY, "Punjab")
     value = mean_ndvi(punjab, "2024-03-01", "2024-04-01")
-    print(f"Mean NDVI over {config.STATE}, March 2024: {value:.3f}")
+    print(f"Mean NDVI over Punjab, March 2024: {value:.3f}")
 
 
 if __name__ == "__main__":

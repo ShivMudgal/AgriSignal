@@ -1,4 +1,7 @@
-"""Extract monthly mean cropland NDVI for every district in the state."""
+"""Extract monthly mean cropland NDVI for every district in the main crop states."""
+
+import time
+from pathlib import Path
 
 import ee
 import pandas as pd
@@ -18,6 +21,9 @@ WORLDCOVER_CROPLAND = 40
 MAX_SUMMARY_QA = 1
 
 MODIS_SCALE_METERS = 250
+
+MAX_ATTEMPTS = 3
+RETRY_WAIT_SECONDS = 10
 
 
 def cropland_mask() -> ee.Image:
@@ -58,6 +64,7 @@ def district_ndvi_for_month(
         mean_value = props.get("mean")
         rows.append(
             {
+                "state": props["GAUL1_NAME"],
                 "district": props["GAUL2_NAME"],
                 "month": month_start.strftime("%Y-%m"),
                 "ndvi": (
@@ -71,35 +78,86 @@ def district_ndvi_for_month(
     return rows
 
 
-def main() -> None:
-    init_earth_engine(config.GEE_PROJECT)
+def fetch_with_retry(
+    districts: ee.FeatureCollection, cropland: ee.Image, month_start: pd.Timestamp
+) -> list[dict] | None:
+    """Fetch one month, retrying on Earth Engine errors. Returns None if all tries fail."""
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        try:
+            return district_ndvi_for_month(districts, cropland, month_start)
+        except ee.EEException as error:
+            print(f"    {month_start:%Y-%m} attempt {attempt} failed: {error}")
+            if attempt < MAX_ATTEMPTS:
+                time.sleep(RETRY_WAIT_SECONDS)
+    return None
 
-    districts = get_districts(config.COUNTRY, config.STATE)
-    cropland = cropland_mask()
-    months = pd.date_range(
-        config.NDVI_START_DATE, config.NDVI_END_DATE, freq="MS", inclusive="left"
-    )
-    print(f"Extracting NDVI for {len(months)} months...")
+
+def state_csv_path(state: str) -> Path:
+    """Return the output file for one state, e.g. data/raw/ndvi/uttar_pradesh.csv."""
+    return config.NDVI_STATE_DIR / f"{state.lower().replace(' ', '_')}.csv"
+
+
+def extract_state(state: str, cropland: ee.Image, months: pd.DatetimeIndex) -> bool:
+    """Extract all months for one state and save them. Returns True on success."""
+    districts = get_districts(config.COUNTRY, state)
+    start = time.time()
 
     all_rows = []
     failed_months = []
     for month_start in months:
-        try:
-            all_rows.extend(district_ndvi_for_month(districts, cropland, month_start))
-            print(f"  {month_start:%Y-%m} done")
-        except ee.EEException as error:
-            # Skip a failed month instead of losing the whole run.
-            print(f"  {month_start:%Y-%m} FAILED: {error}")
+        rows = fetch_with_retry(districts, cropland, month_start)
+        if rows is None:
             failed_months.append(f"{month_start:%Y-%m}")
+        else:
+            all_rows.extend(rows)
+
+    # Only save complete states, so a re-run will retry the incomplete ones.
+    if failed_months:
+        print(f"  {state}: NOT saved, failed months: {', '.join(failed_months)}")
+        return False
 
     ndvi = pd.DataFrame(all_rows).sort_values(["district", "month"])
-    config.NDVI_CSV.parent.mkdir(parents=True, exist_ok=True)
-    ndvi.to_csv(config.NDVI_CSV, index=False)
+    ndvi.to_csv(state_csv_path(state), index=False)
+    minutes = (time.time() - start) / 60
+    print(
+        f"  {state}: {ndvi['district'].nunique()} districts, "
+        f"{len(ndvi)} rows ({minutes:.1f} min)"
+    )
+    return True
 
-    print(f"\nSaved {len(ndvi)} rows to {config.NDVI_CSV}")
-    print(f"Districts: {ndvi['district'].nunique()}, months: {ndvi['month'].nunique()}")
-    if failed_months:
-        print(f"Failed months (re-run to retry): {', '.join(failed_months)}")
+
+def combine_states() -> pd.DataFrame:
+    """Combine every saved state file into one table."""
+    files = sorted(config.NDVI_STATE_DIR.glob("*.csv"))
+    return pd.concat([pd.read_csv(file) for file in files], ignore_index=True)
+
+
+def main() -> None:
+    init_earth_engine(config.GEE_PROJECT)
+    config.NDVI_STATE_DIR.mkdir(parents=True, exist_ok=True)
+
+    cropland = cropland_mask()
+    months = pd.date_range(
+        config.NDVI_START_DATE, config.NDVI_END_DATE, freq="MS", inclusive="left"
+    )
+    print(f"Extracting NDVI for {len(config.NDVI_STATES)} states, {len(months)} months")
+
+    incomplete = []
+    for state in config.NDVI_STATES:
+        if state_csv_path(state).exists():
+            print(f"  {state}: already done, skipping")
+            continue
+        if not extract_state(state, cropland, months):
+            incomplete.append(state)
+
+    ndvi = combine_states()
+    ndvi.to_csv(config.NDVI_CSV, index=False)
+    print(
+        f"\nSaved {len(ndvi)} rows to {config.NDVI_CSV} "
+        f"({ndvi['state'].nunique()} states, {ndvi['district'].nunique()} districts)"
+    )
+    if incomplete:
+        print(f"Incomplete states (re-run to retry): {', '.join(incomplete)}")
 
 
 if __name__ == "__main__":
