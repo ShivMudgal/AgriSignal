@@ -10,6 +10,7 @@ import config
 from earth_engine import (
     MODIS_NDVI_COLLECTION,
     NDVI_SCALE_FACTOR,
+    call_with_retry,
     get_districts,
     init_earth_engine,
 )
@@ -21,9 +22,6 @@ WORLDCOVER_CROPLAND = 40
 MAX_SUMMARY_QA = 1
 
 MODIS_SCALE_METERS = 250
-
-MAX_ATTEMPTS = 3
-RETRY_WAIT_SECONDS = 10
 
 
 def cropland_mask() -> ee.Image:
@@ -78,20 +76,6 @@ def district_ndvi_for_month(
     return rows
 
 
-def fetch_with_retry(
-    districts: ee.FeatureCollection, cropland: ee.Image, month_start: pd.Timestamp
-) -> list[dict] | None:
-    """Fetch one month, retrying on Earth Engine errors. Returns None if all tries fail."""
-    for attempt in range(1, MAX_ATTEMPTS + 1):
-        try:
-            return district_ndvi_for_month(districts, cropland, month_start)
-        except ee.EEException as error:
-            print(f"    {month_start:%Y-%m} attempt {attempt} failed: {error}")
-            if attempt < MAX_ATTEMPTS:
-                time.sleep(RETRY_WAIT_SECONDS)
-    return None
-
-
 def state_csv_path(state: str) -> Path:
     """Return the output file for one state, e.g. data/raw/ndvi/uttar_pradesh.csv."""
     return config.NDVI_STATE_DIR / f"{state.lower().replace(' ', '_')}.csv"
@@ -105,7 +89,9 @@ def extract_state(state: str, cropland: ee.Image, months: pd.DatetimeIndex) -> b
     all_rows = []
     failed_months = []
     for month_start in months:
-        rows = fetch_with_retry(districts, cropland, month_start)
+        rows = call_with_retry(
+            district_ndvi_for_month, districts, cropland, month_start
+        )
         if rows is None:
             failed_months.append(f"{month_start:%Y-%m}")
         else:
@@ -138,12 +124,14 @@ def main() -> None:
 
     cropland = cropland_mask()
     months = pd.date_range(
-        config.NDVI_START_DATE, config.NDVI_END_DATE, freq="MS", inclusive="left"
+        config.START_DATE, config.END_DATE, freq="MS", inclusive="left"
     )
-    print(f"Extracting NDVI for {len(config.NDVI_STATES)} states, {len(months)} months")
+    print(
+        f"Extracting NDVI for {len(config.STUDY_STATES)} states, {len(months)} months"
+    )
 
     incomplete = []
-    for state in config.NDVI_STATES:
+    for state in config.STUDY_STATES:
         if state_csv_path(state).exists():
             print(f"  {state}: already done, skipping")
             continue
