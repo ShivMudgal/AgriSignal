@@ -38,7 +38,8 @@ def download(url: str) -> pd.DataFrame:
                 f"Download it in a browser and save it as {path}"
             )
         path.write_bytes(response.content)
-    return pd.read_excel(path, header=None)
+    # calamine reads both the old .xls and the new .xlsx format.
+    return pd.read_excel(path, header=None, engine="calamine")
 
 
 def crop_rows(
