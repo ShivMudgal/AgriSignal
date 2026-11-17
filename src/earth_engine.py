@@ -6,7 +6,10 @@ from typing import Any
 
 import ee
 
+# Same 16-day NDVI product from the Terra and Aqua satellites. Their
+# composites are 8 days apart, so together they see past more cloud and fog.
 MODIS_NDVI_COLLECTION = "MODIS/061/MOD13Q1"
+MODIS_AQUA_NDVI_COLLECTION = "MODIS/061/MYD13Q1"
 GAUL_STATES = "FAO/GAUL/2025/level1"
 GAUL_DISTRICTS = "FAO/GAUL/2025/level2"
 

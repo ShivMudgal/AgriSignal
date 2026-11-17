@@ -9,7 +9,7 @@ Still in progress.
 
 | Data | Source | Coverage |
 |---|---|---|
-| Crop health (NDVI) | NASA MODIS (MOD13Q1) on Google Earth Engine, cropland only (ESA WorldCover), cloudy pixels removed | 332 districts in 10 states, monthly |
+| Crop health (NDVI) | NASA MODIS Terra and Aqua (MOD13Q1, MYD13Q1) on Google Earth Engine, cropland only (ESA WorldCover), cloudy pixels removed | 332 districts in 10 states, monthly |
 | Rainfall | CHIRPS v3 daily rainfall, summed per month | Same districts, monthly |
 | Prices | Wholesale Price Index (WPI) for wheat and paddy, Office of the Economic Adviser | All-India, monthly |
 
@@ -55,7 +55,7 @@ The WPI script downloads two Excel files from eaindustry.nic.in into `data/raw/w
 
 ## Known limitations
 
-- Fog (January 2024) and monsoon cloud (July 2024) leave some district-months with very few clear pixels.
+- Fog (January 2024) and monsoon cloud (July 2024) can leave some district-months with very few clear pixels, even with both satellites.
 - Some south-west Punjab districts grow cotton in the kharif season, so their July to September NDVI is not only rice.
 - The old and new WPI series do not always agree on the direction of paddy prices in the months they overlap.
 - The latest one or two months of WPI are provisional and can be revised.

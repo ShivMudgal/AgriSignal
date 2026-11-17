@@ -8,6 +8,7 @@ import pandas as pd
 
 import config
 from earth_engine import (
+    MODIS_AQUA_NDVI_COLLECTION,
     MODIS_NDVI_COLLECTION,
     NDVI_SCALE_FACTOR,
     call_with_retry,
@@ -44,6 +45,7 @@ def district_ndvi_for_month(
 
     monthly_ndvi = (
         ee.ImageCollection(MODIS_NDVI_COLLECTION)
+        .merge(ee.ImageCollection(MODIS_AQUA_NDVI_COLLECTION))
         .filterDate(month_start.strftime("%Y-%m-%d"), month_end.strftime("%Y-%m-%d"))
         .map(lambda image: clean_ndvi(image, cropland))
         .mean()
