@@ -17,8 +17,7 @@ DB_PATH = PROJECT_ROOT / "db" / "agrisignal.db"
 
 COUNTRY = "India"
 
-# Main producing states for each crop. Together they grow roughly 85% of
-# India's wheat and about 70% of its rice.
+# The largest producing states for each crop (Bihar is left out for now).
 WHEAT_STATES = ["Uttar Pradesh", "Madhya Pradesh", "Punjab", "Haryana", "Rajasthan"]
 RICE_STATES = [
     "West Bengal",
