@@ -45,8 +45,15 @@ RAINFALL_CSV = RAW_DATA_DIR / "rainfall_monthly.csv"
 TEMPERATURE_CSV = RAW_DATA_DIR / "temperature_monthly.csv"
 WPI_DOWNLOAD_DIR = RAW_DATA_DIR / "wpi"
 WPI_CSV = RAW_DATA_DIR / "wpi_monthly.csv"
+FCI_DOWNLOAD_DIR = RAW_DATA_DIR / "fci"
+FCI_TRANSCRIBED_CSV = RAW_DATA_DIR / "fci_stocks_transcribed.csv"
+FCI_STOCKS_CSV = RAW_DATA_DIR / "fci_stocks_monthly.csv"
+MSP_CSV = RAW_DATA_DIR / "msp_yearly.csv"
+POLICY_EVENTS_CSV = RAW_DATA_DIR / "policy_events.csv"
+
 NDVI_CLEAN_CSV = PROCESSED_DATA_DIR / "ndvi_clean.csv"
 RAINFALL_CLEAN_CSV = PROCESSED_DATA_DIR / "rainfall_clean.csv"
+TEMPERATURE_CLEAN_CSV = PROCESSED_DATA_DIR / "temperature_clean.csv"
 NATIONAL_CSV = PROCESSED_DATA_DIR / "national_monthly.csv"
 
 # Districts that are almost all city or have no usable cropland.
@@ -54,6 +61,3 @@ EXCLUDED_DISTRICTS = ["Kolkata", "Hyderabad", "Disputed (Ratlam & Mandsaur)"]
 
 # Below this many clear cropland pixels a monthly NDVI value is not reliable.
 MIN_CLEAR_PIXELS = 100
-FCI_DOWNLOAD_DIR = RAW_DATA_DIR / "fci"
-FCI_TRANSCRIBED_CSV = RAW_DATA_DIR / "fci_stocks_transcribed.csv"
-FCI_STOCKS_CSV = RAW_DATA_DIR / "fci_stocks_monthly.csv"

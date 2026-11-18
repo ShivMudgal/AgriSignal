@@ -65,8 +65,17 @@ def load(engine: Engine, name: str, table: pd.DataFrame) -> None:
 def main() -> None:
     ndvi = pd.read_csv(config.NDVI_CLEAN_CSV)
     rainfall = pd.read_csv(config.RAINFALL_CLEAN_CSV)
+    temperature = pd.read_csv(config.TEMPERATURE_CLEAN_CSV)
+
     wpi = pd.read_csv(config.WPI_CSV)
     wpi["month"] = first_of_month(wpi["month"])
+    stocks = pd.read_csv(config.FCI_STOCKS_CSV)
+    stocks["month"] = first_of_month(stocks["month"])
+    msp = pd.read_csv(config.MSP_CSV)
+    msp["season_start"] = first_of_month(msp["season_start"])
+    events = pd.read_csv(config.POLICY_EVENTS_CSV).rename(
+        columns={"start": "start_date", "end": "end_date"}
+    )
 
     districts = build_districts(ndvi)
 
@@ -76,7 +85,11 @@ def main() -> None:
     load(engine, "districts", districts)
     load(engine, "ndvi", with_district_id(ndvi, districts))
     load(engine, "rainfall", with_district_id(rainfall, districts))
+    load(engine, "temperature", with_district_id(temperature, districts))
     load(engine, "wpi", wpi)
+    load(engine, "fci_stocks", stocks)
+    load(engine, "msp", msp)
+    load(engine, "policy_events", events)
 
 
 if __name__ == "__main__":

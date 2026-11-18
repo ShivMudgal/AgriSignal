@@ -1,4 +1,4 @@
-"""Clean the raw NDVI and rainfall tables and save them to data/processed."""
+"""Clean the raw district tables (NDVI, rainfall, temperature) for data/processed."""
 
 import pandas as pd
 
@@ -10,39 +10,61 @@ def drop_excluded_districts(table: pd.DataFrame) -> pd.DataFrame:
     return table[~table["district"].isin(config.EXCLUDED_DISTRICTS)]
 
 
-def fill_unreliable_ndvi(ndvi: pd.DataFrame) -> pd.DataFrame:
-    """Replace NDVI from too few clear pixels with the value between its neighbours."""
-    ndvi = ndvi.sort_values(["state", "district", "month"]).copy()
-    unreliable = ndvi["ndvi"].isna() | (ndvi["pixel_count"] < config.MIN_CLEAR_PIXELS)
-    ndvi.loc[unreliable, "ndvi"] = None
+def fill_gaps(
+    table: pd.DataFrame, column: str, unreliable: pd.Series, decimals: int
+) -> pd.DataFrame:
+    """Replace unreliable or missing values with the value between their neighbours."""
+    table = table.copy()
+    table.loc[unreliable, column] = None
 
     # Linear interpolation within each district, using the months on either side.
-    ndvi["ndvi"] = (
-        ndvi.groupby(["state", "district"])["ndvi"]
+    table[column] = (
+        table.groupby(["state", "district"])[column]
         .transform(lambda series: series.interpolate(limit_area="inside"))
-        .round(4)
+        .round(decimals)
     )
-    ndvi["is_filled"] = unreliable
+    table["is_filled"] = unreliable
 
-    if ndvi["ndvi"].isna().any():
-        raise SystemExit("Some NDVI gaps could not be filled (first or last month).")
-    return ndvi
+    if table[column].isna().any():
+        raise SystemExit(
+            f"Some {column} gaps could not be filled (first or last month)."
+        )
+    return table
+
+
+def clean_ndvi(ndvi: pd.DataFrame) -> pd.DataFrame:
+    """Fill NDVI that is missing or based on too few clear pixels."""
+    ndvi = ndvi.sort_values(["state", "district", "month"])
+    unreliable = ndvi["ndvi"].isna() | (ndvi["pixel_count"] < config.MIN_CLEAR_PIXELS)
+    return fill_gaps(ndvi, "ndvi", unreliable, decimals=4)
+
+
+def clean_temperature(temperature: pd.DataFrame) -> pd.DataFrame:
+    """Fill months where clouds hid the ground for the whole month."""
+    temperature = temperature.sort_values(["state", "district", "month"])
+    return fill_gaps(
+        temperature, "lst_day_c", temperature["lst_day_c"].isna(), decimals=2
+    )
+
+
+def save(table: pd.DataFrame, path, name: str) -> None:
+    """Write a cleaned table and report how many values were filled."""
+    table.to_csv(path, index=False, lineterminator="\n")
+    filled = f", {table['is_filled'].sum()} filled" if "is_filled" in table else ""
+    print(f"{name}: {len(table)} rows{filled}")
 
 
 def main() -> None:
-    ndvi = drop_excluded_districts(pd.read_csv(config.NDVI_CSV))
+    ndvi = clean_ndvi(drop_excluded_districts(pd.read_csv(config.NDVI_CSV)))
     rainfall = drop_excluded_districts(pd.read_csv(config.RAINFALL_CSV))
-
-    ndvi = fill_unreliable_ndvi(ndvi)
+    temperature = clean_temperature(
+        drop_excluded_districts(pd.read_csv(config.TEMPERATURE_CSV))
+    )
 
     config.PROCESSED_DATA_DIR.mkdir(parents=True, exist_ok=True)
-    ndvi.to_csv(config.NDVI_CLEAN_CSV, index=False, lineterminator="\n")
-    rainfall.to_csv(config.RAINFALL_CLEAN_CSV, index=False, lineterminator="\n")
-
-    print(
-        f"NDVI: {len(ndvi)} rows, {ndvi['is_filled'].sum()} filled from nearby months"
-    )
-    print(f"Rainfall: {len(rainfall)} rows")
+    save(ndvi, config.NDVI_CLEAN_CSV, "NDVI")
+    save(rainfall, config.RAINFALL_CLEAN_CSV, "Rainfall")
+    save(temperature, config.TEMPERATURE_CLEAN_CSV, "Temperature")
     print(
         f"Districts: {ndvi.groupby(['state', 'district']).ngroups} "
         f"(dropped {', '.join(config.EXCLUDED_DISTRICTS)})"
