@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import streamlit as st
 from plotly.subplots import make_subplots
 
-from common import CROP_COLORS, load_events, load_national
+from common import CROP_COLORS, load_events, load_national, sidebar_about
 
 st.set_page_config(page_title="Prices and signals", layout="wide")
 st.title("Prices and signals")
@@ -25,10 +25,21 @@ SIGNALS = {
     "Minimum support price": ("msp_rs_per_qtl", "Rs per quintal"),
 }
 
-col1, col2 = st.columns([1, 2])
-crop = col1.radio("Crop", ["wheat", "paddy"], horizontal=True)
-signal_label = col2.selectbox("Signal", list(SIGNALS))
-column, unit = SIGNALS[signal_label]
+NOTES = {
+    "ndvi_vs_normal": "For wheat, greener than normal goes with smaller price rises over the next few months.",
+    "tmax_c_vs_normal": "March 2010, 2017 and 2022 were the hottest Marches in the wheat states. Look at the wheat price after March 2022.",
+    "rainfall_mm_vs_normal": "Rainfall showed no clear link with later prices: much of the wheat and rice is irrigated.",
+    "stock_lakh_t": "Wheat stocks jump every May when the government buys the new harvest, then fall through the year.",
+    "msp_rs_per_qtl": "The support price for each marketing season, including any bonus. For paddy, the market price climbs with it.",
+}
+
+with st.sidebar:
+    st.header("Chart settings")
+    crop = st.radio("Crop", ["wheat", "paddy"], format_func=str.title)
+    signal_label = st.selectbox("Signal underneath", list(SIGNALS))
+    column, unit = SIGNALS[signal_label]
+    st.info(NOTES[column])
+sidebar_about()
 
 data = national[national["crop"] == crop]
 figure = make_subplots(
@@ -84,18 +95,5 @@ figure.update_yaxes(title_text=unit, row=2, col=1)
 figure.update_layout(height=620, showlegend=False, margin={"t": 20})
 st.plotly_chart(figure, use_container_width=True)
 
-notes = {
-    "ndvi_vs_normal": "For wheat, greener than normal goes with smaller price rises over the next few months.",
-    "tmax_c_vs_normal": "March 2010, 2017 and 2022 were the hottest Marches in the wheat states.",
-    "rainfall_mm_vs_normal": "Rainfall showed no clear link with later prices once the calendar was accounted for.",
-    "stock_lakh_t": "Wheat stocks jump every May when the government buys the new harvest.",
-    "msp_rs_per_qtl": "The support price for each marketing season, including any bonus.",
-}
-st.caption(
-    notes[column]
-    + (
-        " Before April 2012 the paddy price is the rice index."
-        if crop == "paddy"
-        else ""
-    )
-)
+if crop == "paddy":
+    st.caption("Before April 2012 the paddy price is the rice index.")

@@ -11,6 +11,13 @@ PROCESSED_DIR = DATA_DIR / "processed"
 RAW_DIR = DATA_DIR / "raw"
 
 CROP_COLORS = {"wheat": "#c28a00", "paddy": "#2a7f62"}
+
+MODEL_LABELS = {
+    "xgboost_base_ndvi": "XGBoost with NDVI",
+    "logistic_base_ndvi": "Logistic regression with NDVI",
+    "xgboost_base": "XGBoost without NDVI",
+    "logistic_base": "Logistic regression without NDVI",
+}
 MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
 MONTH_NAMES += ["Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
@@ -93,6 +100,27 @@ def load_forecast() -> pd.DataFrame:
 def load_events() -> pd.DataFrame:
     """Export bans and stock limits."""
     return pd.read_csv(RAW_DIR / "policy_events.csv", parse_dates=["start", "end"])
+
+
+def sidebar_about() -> None:
+    """Short description of the project at the bottom of the sidebar."""
+    with st.sidebar:
+        st.divider()
+        st.markdown("**About AgriSignal**")
+        st.caption(
+            "Uses satellite crop health (NDVI), weather and government data to predict "
+            "whether wheat and paddy prices in India rise over the next 1 to 3 months."
+        )
+        st.markdown(
+            "**Data:** Jan 2005 to Sep 2026  \n"
+            "**Coverage:** 329 districts in 10 states  \n"
+            "**Main result:** adding NDVI lifts 3-month wheat forecasts from 73% to 80% "
+            "correct"
+        )
+        st.caption(
+            "Sources: NASA MODIS, CHIRPS, ERA5-Land, Office of the Economic Adviser "
+            "(WPI), Department of Food and Public Distribution."
+        )
 
 
 def accuracy_table(predictions: pd.DataFrame) -> pd.DataFrame:

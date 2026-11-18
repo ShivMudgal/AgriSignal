@@ -4,7 +4,13 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from common import accuracy_table, load_forecast, load_predictions
+from common import (
+    MODEL_LABELS,
+    accuracy_table,
+    load_forecast,
+    load_predictions,
+    sidebar_about,
+)
 
 st.set_page_config(page_title="Forecasts", layout="wide")
 st.title("Forecasts")
@@ -33,17 +39,27 @@ for crop in ["wheat", "paddy"]:
             f"{row.probability_up:.0%} chance up",
             f"past accuracy {row.past_accuracy:.0%} (rule {row.rule_accuracy:.0%})",
             delta_color="off",
-            help=f"Model: {row.model}. Best simple rule on the same months: {row.best_rule}.",
+            help=f"Model: {MODEL_LABELS[row.model]}. Best simple rule on the same months: {row.best_rule}.",
         )
 
-st.subheader("Track record")
-col1, col2, col3 = st.columns(3)
-crop = col1.radio("Crop", ["wheat", "paddy"], horizontal=True, key="record_crop")
-months_ahead = col2.radio("Months ahead", [1, 2, 3], index=2, horizontal=True)
-model = col3.selectbox(
-    "Model",
-    ["xgboost_base_ndvi", "logistic_base_ndvi", "xgboost_base", "logistic_base"],
-)
+with st.sidebar:
+    st.header("Track record settings")
+    crop = st.radio("Crop", ["wheat", "paddy"], format_func=str.title)
+    months_ahead = st.radio(
+        "Months ahead",
+        [1, 2, 3],
+        index=2,
+        format_func=lambda months: f"{months} month{'s' if months > 1 else ''}",
+    )
+    model = st.selectbox("Model", list(MODEL_LABELS), format_func=MODEL_LABELS.get)
+    st.caption(
+        "The forecasts at the top use the best model for each crop and horizon. "
+        "These settings only change the track record chart and table."
+    )
+sidebar_about()
+
+st.subheader(f"Track record: {crop}, {months_ahead} month(s) ahead")
+st.markdown(f"**{MODEL_LABELS[model]}**, month by month from 2012")
 
 data = predictions[
     (predictions["crop"] == crop) & (predictions["months_ahead"] == months_ahead)
@@ -81,6 +97,8 @@ table = (
     accuracy[accuracy["crop"] == crop].set_index("months_ahead").drop(columns="crop")
 )
 table = (table * 100).round(1)
-table.columns = [name.replace("_", " ") for name in table.columns]
+table.columns = [
+    MODEL_LABELS.get(name, name.replace("_", " ")) for name in table.columns
+]
 st.markdown("**% of months called correctly, 2012-2026**")
 st.dataframe(table, use_container_width=True)

@@ -3,7 +3,7 @@
 import plotly.graph_objects as go
 import streamlit as st
 
-from common import accuracy_table, load_national, load_predictions
+from common import accuracy_table, load_national, load_predictions, sidebar_about
 
 st.set_page_config(page_title="AgriSignal", layout="wide")
 
@@ -55,7 +55,12 @@ st.markdown("""
 """)
 
 st.subheader("Accuracy on 2012-2026, month by month")
-crop = st.radio("Crop", ["wheat", "paddy"], horizontal=True)
+with st.sidebar:
+    st.header("Chart settings")
+    crop = st.radio(
+        "Crop for the accuracy chart", ["wheat", "paddy"], format_func=str.title
+    )
+sidebar_about()
 data = accuracy[accuracy["crop"] == crop].set_index("months_ahead")
 best_rule = data[["always_up", "calendar", "momentum"]].max(axis=1)
 best_model = data[["logistic_base_ndvi", "xgboost_base_ndvi"]].max(axis=1)
