@@ -75,7 +75,7 @@ figure.update_geos(fitbounds="locations", visible=False, bgcolor="rgba(0,0,0,0)"
 figure.update_layout(paper_bgcolor="rgba(0,0,0,0)")
 figure.update_traces(marker_line_width=0.3, marker_line_color="white")
 figure.update_layout(height=620, margin={"l": 0, "r": 0, "t": 0, "b": 0})
-st.plotly_chart(figure, use_container_width=True)
+st.plotly_chart(figure, width="stretch")
 
 st.caption(
     f"{month_name} {year}. Average across districts: "

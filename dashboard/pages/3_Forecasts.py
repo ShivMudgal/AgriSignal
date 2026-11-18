@@ -87,7 +87,7 @@ figure.update_layout(
     margin={"t": 20},
     legend={"orientation": "h"},
 )
-st.plotly_chart(figure, use_container_width=True)
+st.plotly_chart(figure, width="stretch")
 st.caption(
     "Green dots: the model's call (above or below 50%) was right. Red: it was wrong."
 )
@@ -101,4 +101,4 @@ table.columns = [
     MODEL_LABELS.get(name, name.replace("_", " ")) for name in table.columns
 ]
 st.markdown("**% of months called correctly, 2012-2026**")
-st.dataframe(table, use_container_width=True)
+st.dataframe(table, width="stretch")

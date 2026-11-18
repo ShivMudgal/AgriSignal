@@ -86,7 +86,7 @@ figure.update_layout(
     height=380,
     margin={"t": 20},
 )
-st.plotly_chart(figure, use_container_width=True)
+st.plotly_chart(figure, width="stretch")
 st.caption(
     "Models are retrained every month on earlier data only and then predict the next "
     "month, as they would have been used live. The simple rules are: always predict the "

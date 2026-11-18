@@ -93,7 +93,7 @@ for ban in bans.itertuples():
 figure.update_yaxes(title_text="WPI (2022-23 = 100)", row=1, col=1)
 figure.update_yaxes(title_text=unit, row=2, col=1)
 figure.update_layout(height=620, showlegend=False, margin={"t": 20})
-st.plotly_chart(figure, use_container_width=True)
+st.plotly_chart(figure, width="stretch")
 
 if crop == "paddy":
     st.caption("Before April 2012 the paddy price is the rice index.")
