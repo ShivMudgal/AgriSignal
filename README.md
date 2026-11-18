@@ -1,36 +1,77 @@
 # AgriSignal
 
-This is a project I'm building to see if satellite data can predict crop prices in India.
-The goal is to predict whether all-India wheat and paddy prices will go up or down over the next 1 to 3 months, using crop health, rainfall and heat in the main growing states, together with the government factors that move Indian grain prices (stocks, support prices and export bans).
+Can satellite pictures of crops predict where Indian grain prices go next? AgriSignal measures crop health from space in 329 districts across India's main wheat and rice states, combines it with weather and government data, and tests whether that helps predict if all-India wheat and paddy prices will rise over the next 1 to 3 months.
 
-Still in progress.
+![Crop health in March 2022](reports/figures/crop_health_march_2022.png)
+
+*March 2022: the wheat belt (Punjab, Haryana, western Uttar Pradesh) was browner than usual just before the harvest, during an early heatwave. Wheat prices rose 3.2% that month, and wheat exports were banned in May.*
+
+## What I found
+
+- **Crop health predicts wheat prices.** When the wheat states are greener than in recent years, wheat prices rise less over the following months. This passes a Granger causality test at 1, 2 and 3 month lags, even after correcting for running 48 tests.
+- **It improves the 3-month wheat forecast.** In a walk-forward test on 2012 to 2026, adding NDVI raises accuracy from 73.0% to 79.9%, against 75.3% for the best simple rule (the usual direction for that calendar month). Only the models with NDVI give better probability forecasts than that rule (Brier score 0.150 vs 0.173, p = 0.016).
+- **The edge is real but modest.** The accuracy gain over the calendar rule (+4.6 points over 174 months) is not statistically significant on its own (McNemar p = 0.24), and it varies from year to year.
+- **Paddy is different.** Paddy prices rise almost every year, and no model beats simply predicting "up". Crop conditions add nothing measurable; government buying at the minimum support price seems to matter more.
+- **More data killed a false lead.** On 2018 to 2026 data, rainfall looked as useful as NDVI for paddy. With 21 years of data the effect disappears.
+
+![Accuracy of the models against simple rules](reports/figures/accuracy.png)
+
+The full write-up is in [reports/report.md](reports/report.md).
+
+## How it works
+
+1. **Satellite and weather data.** Monthly crop health (NDVI from NASA's MODIS Terra and Aqua satellites, cropland only, cloudy pixels removed), rainfall (CHIRPS) and temperature (ERA5-Land) for every district, extracted with Google Earth Engine.
+2. **Prices and policy.** All-India wholesale price indices for wheat and paddy (three official series joined into one), plus overall and food inflation, diesel prices, government grain stocks, minimum support prices, and the dates of export bans and stock limits.
+3. **Cleaning and a database.** Non-farm districts are dropped, unreliable values are filled and flagged, and everything is loaded into a SQL database (SQLite by default, PostgreSQL by changing one setting).
+4. **Exploration.** One national series per crop, weighting each district by its farmland, and a look at which signals move with later prices (`notebooks/01_eda.ipynb`).
+5. **Signal tests.** Leakage-free features, simple baseline rules and Granger causality tests (`notebooks/02_signal_tests.ipynb`).
+6. **Models.** Logistic regression and XGBoost, retrained every month on past data only and scored against the baselines (`notebooks/03_models.ipynb`).
+7. **Dashboard.** A Streamlit app with a district crop health map, prices next to each signal, and the latest forecast with the models' track record.
 
 ## Data
 
 | Data | Source | Coverage |
 |---|---|---|
-| Crop health (NDVI) | NASA MODIS Terra and Aqua (MOD13Q1, MYD13Q1) on Google Earth Engine, cropland only (ESA WorldCover), cloudy pixels removed | 332 districts in 10 states, monthly |
+| Crop health (NDVI) | NASA MODIS Terra and Aqua (MOD13Q1, MYD13Q1) via Google Earth Engine, cropland only (ESA WorldCover) | 329 districts in 10 states, monthly |
 | Rainfall | CHIRPS v3 daily rainfall, summed per month | Same districts, monthly |
-| Temperature | ERA5-Land monthly mean and hottest 2 m air temperature | Same districts, monthly |
-| Prices | Wholesale Price Index (WPI) for wheat, paddy, all commodities, food articles and diesel, Office of the Economic Adviser | All-India, monthly |
-| Government grain stocks | Wheat and rice in the central pool on the 1st of each month, from the Foodgrains Bulletin of the Department of Food and Public Distribution | All-India, monthly |
-| Minimum support price | MSP plus any bonus for each marketing season, from the Foodgrains Bulletins and the Department of Food and Public Distribution | All-India, yearly |
-| Policy events | Export bans and stock limits on wheat and rice, from DGFT notifications, PIB releases and Lok Sabha answers (sources listed in the file) | Dated events |
+| Temperature | ERA5-Land monthly mean and hottest air temperature | Same districts, monthly |
+| Prices | Wholesale Price Index for wheat, paddy, all commodities, food articles and diesel, Office of the Economic Adviser | All-India, monthly |
+| Government grain stocks | Central pool wheat and rice stocks on the 1st of each month, Foodgrains Bulletins of the Department of Food and Public Distribution | All-India, monthly |
+| Minimum support price | MSP plus any bonus for each marketing season, same department | All-India, yearly |
+| Policy events | Export bans and stock limits, from DGFT notifications, PIB releases and Lok Sabha answers (sources in the file) | Dated events |
 
 Everything covers January 2005 to September 2026. District boundaries come from FAO GAUL 2025.
 
-WPI has been published with three base years (2004-05, 2011-12 and 2022-23). I chain-linked them item by item: each older series is rescaled so it matches the newer one in the newer series' first month, which keeps every real monthly up and down move. Before April 2012 there is no paddy index, so the rice index stands in for it (marked in the data).
+A few things needed extra work:
 
-The grain stock figures come from six bulletins (2015 to 2026), each covering about three years, so most months are reported twice and the overlaps are checked against each other. 2005 to 2011 only exists as a scanned bulletin (November 2011, from the Internet Archive copy of the old dfpd.nic.in site), so I typed that table into `data/raw/fci_stocks_transcribed.csv`. Every month is checked: rice, wheat and coarse grains must add up to the printed total, and the 2005 to April 2009 values must also appear in the March 2009 bulletin.
+- **Prices.** The WPI was published with three base years (2004-05, 2011-12 and 2022-23). I chain-linked them item by item, so every real monthly move is kept. My linking factor for all commodities (1.526) matches the official one (1.53). Before April 2012 there is no paddy index, so the rice index stands in (marked in the data).
+- **Grain stocks.** No free monthly series exists, so I built one from the Department of Food and Public Distribution's monthly bulletins. Six text bulletins cover 2012 to 2026; their 57 overlapping months match exactly. 2005 to 2011 only survives as a scanned bulletin (Internet Archive copy of the old dfpd.nic.in site), so I typed that table into `data/raw/fci_stocks_transcribed.csv` and checked every month against the printed totals and a second bulletin. The checks also caught one misprint in an official bulletin.
+- **Temperature.** I first used MODIS land surface temperature, but both satellites' orbits have drifted since about 2020, so they pass over later or earlier in the day and read 2 to 3 degrees cooler in 2025 and 2026. ERA5-Land has no such drift and still picks out the real heatwaves (March 2010, 2017 and 2022).
 
-## Tools Used
+## Project structure
 
-- Python
-- Google Earth Engine
-- Pandas
-- SQLite
+```
+src/                  data pipeline, features, models and figures
+  extract_*.py        satellite and weather data from Earth Engine
+  build_wpi.py        linked price series
+  build_fci_stocks.py grain stocks from the bulletins
+  clean_data.py       cleaning
+  build_database.py   SQL database
+  build_national.py   national monthly table per crop
+  build_features.py   leakage-free model features
+  baselines.py        simple rules the models must beat
+  train_models.py     walk-forward model testing
+  forecast.py         forecast from the latest data
+sql/schema.sql        database schema (SQLite and PostgreSQL)
+notebooks/            exploration, signal tests and model results
+dashboard/            Streamlit app
+data/raw/             extracted and collected data
+data/processed/       cleaned data, features and predictions
+reports/              report and figures
+tests/                unit tests
+```
 
-## Setup
+## Running it
 
 ```
 python -m venv .venv
@@ -38,16 +79,13 @@ python -m venv .venv
 pip install -r requirements-dev.txt
 ```
 
-Copy `.env.example` to `.env` and add your Earth Engine project id, then run:
+To only look at the results, the dashboard needs nothing else, because it reads the committed data:
 
 ```
-earthengine authenticate
-python src/check_gee.py
+streamlit run dashboard/Overview.py
 ```
 
-`requirements.txt` has only what the app needs to run. `requirements-dev.txt` adds formatting, testing and notebook tools.
-
-## Getting the data
+To rebuild everything, copy `.env.example` to `.env`, add your Google Earth Engine project id, and run `earthengine authenticate`. Then:
 
 ```
 python src/extract_ndvi.py
@@ -55,94 +93,29 @@ python src/extract_rainfall.py
 python src/extract_temperature.py
 python src/build_wpi.py
 python src/build_fci_stocks.py
-```
-
-The NDVI script saves one file per state in `data/raw/ndvi/`, so if it stops halfway, running it again continues where it left off.
-
-The WPI script downloads two Excel files from eaindustry.nic.in into `data/raw/wpi/`. That site sometimes sends an incomplete security certificate, which Python rejects. If the download fails, the script prints the link, and you can download the file in a browser and save it in that folder.
-
-Temperature comes from the ERA5-Land reanalysis rather than the MODIS satellites. I tried MODIS land surface temperature first, but the orbits of both Terra and Aqua have been drifting since about 2020, so they pass over at a different time of day and their daytime readings over Punjab came out 2 to 3 degrees cooler in 2025 and 2026 than in 2024. ERA5-Land has no such drift and still picks out the real heatwaves (March 2010 and March 2022).
-
-## Cleaning and the database
-
-```
 python src/clean_data.py
 python src/build_database.py
-```
-
-Cleaning drops three districts with almost no farmland (Kolkata, Hyderabad and a disputed area), leaving 329 districts. NDVI values from fewer than 100 clear pixels are replaced by the value between the months before and after, and marked in an `is_filled` column. Only 14 of 85,869 values needed this.
-
-The database has eight tables (`districts`, `ndvi`, `rainfall`, `temperature`, `wpi`, `fci_stocks`, `msp`, `policy_events`) and a view, `district_month`, that puts the district data side by side. The schema is in `sql/schema.sql`. It uses SQLite by default (`db/agrisignal.db`). To use PostgreSQL instead, install `psycopg` and set `DATABASE_URL` in `.env` (see `.env.example`).
-
-## Exploring the data
-
-```
 python src/build_national.py
-```
-
-This combines the districts into one national monthly series per crop (wheat states and rice states), weighting each district by its farmland, and adds prices, government stocks, the MSP in force and export ban and stock limit flags. The analysis is in `notebooks/01_eda.ipynb`. Main findings so far (2005 to 2026):
-
-- The calendar explains a lot: wheat prices usually fall from February to June after the harvest and rise for the rest of the year.
-- Greener than normal crops go with smaller price rises over the next 1 to 3 months (correlation about -0.25 for wheat and -0.27 for paddy).
-- Recent price rises tend to continue, and MSP increases go with higher paddy prices (about +0.30).
-- Hotter than normal months go with bigger price rises (about +0.12), a small but consistent effect.
-- Rainfall, stock changes and export bans show no clear link. On 2018 to 2026 data alone, paddy rainfall looked as strong as NDVI; with 21 years it disappears.
-- Each signal on its own is weak, so the next step is to test whether together they beat the calendar on months a model has not seen.
-
-## Testing the signals
-
-```
 python src/build_features.py
-python src/baselines.py
-```
-
-`build_features.py` turns the national table into model features using only past information: each anomaly compares a month with the same calendar month in the previous five years. `baselines.py` scores three simple rules (always up, same direction as usual for the calendar month, same direction as recent momentum) on 2012 to 2026. The best of them already calls the price direction right 68% to 75% of the time, which is the bar a model has to beat.
-
-`notebooks/02_signal_tests.ipynb` runs Granger causality tests: does a signal improve the forecast of next month's price change beyond past price changes and the calendar? With 48 tests, the p-values are adjusted for multiple testing (Benjamini-Hochberg). Results:
-
-- Wheat NDVI passes at 1, 2 and 3 lags (adjusted p = 0.002 to 0.039). Greener than recent years means a smaller price rise; a typical anomaly moves next month's wheat price change by about 0.4 percentage points.
-- Past price changes (momentum) pass for both crops.
-- Paddy NDVI, heat, rainfall, stock changes, food inflation, MSP changes and export bans do not pass for either crop.
-
-## Models
-
-```
 python src/train_models.py
-```
-
-Logistic regression and XGBoost predict whether the price will be higher 1, 2 or 3 months later. They are tested walk-forward: for every month from 2012 the models are retrained on all earlier months whose outcome was known, then make one prediction. Each model is trained twice, with and without the NDVI inputs, so the value of the satellite data shows up directly. The analysis is in `notebooks/03_models.ipynb`.
-
-- Wheat, 3 months ahead: adding NDVI raises accuracy from 73.0% to 79.9% (XGBoost), against 75.3% for the best simple rule (calendar). Only the models with NDVI produce better probability forecasts than the calendar (Brier score 0.150 vs 0.173, p = 0.016).
-- The accuracy gain over the calendar rule (+4.6 points over 174 months) is not statistically significant (McNemar p = 0.24), and the edge varies from year to year.
-- Wheat 1 and 2 months ahead: NDVI adds nothing; momentum and the calendar do the work.
-- Paddy: no model beats the simple rules. At 3 months, "always up" (75.3%) is significantly better than every model.
-
-In short: satellite crop health measurably improves 3-month wheat forecasts, but the gain over a well-chosen calendar rule is modest, and paddy prices, which rise steadily, seem shaped more by government buying at the support price than by crop conditions.
-
-## Dashboard
-
-```
 python src/forecast.py
 python src/export_districts.py
-streamlit run dashboard/Overview.py
+python src/make_figures.py
 ```
 
-`forecast.py` retrains the best model for each crop and horizon on all the data and predicts the 1 to 3 months after the data ends. `export_districts.py` saves simplified district boundaries for the map. The dashboard has four pages:
+The NDVI extraction takes a few hours and saves one file per state, so if it stops halfway, running it again continues where it left off. The price and bulletin sites sometimes send an incomplete security certificate, which Python rejects; if a download fails, the script prints the link so the file can be saved by hand.
 
-- **Overview**: the question, the main results and accuracy against the simple rules
-- **Crop health map**: every district's NDVI compared with normal, for any month since 2005
-- **Prices and signals**: each crop's price with crop health, heat, rainfall, stocks or MSP underneath, and export bans shaded
-- **Forecasts**: the latest forecast and each model's month by month track record
+Tests: `pytest tests`
 
-The dashboard only reads the committed files in `data/`, so it runs without Earth Engine or the database.
+## Limitations
 
-## Known limitations
+- About 225 months of usable data is not much for a model. The results are stated with that in mind.
+- Fog and monsoon cloud leave a few district-months with too few clear pixels; these are filled from the months either side and flagged.
+- NDVI does not separate crops: in the kharif season it includes cotton and soybean as well as rice.
+- NDVI drifts slightly upward over the years. The model features compare each month with only the previous five years, which absorbs most of this.
+- Before April 2012 the paddy price is the rice index, and the latest one or two months of WPI are provisional.
+- Government stocks, support prices and export bans partly react to prices, so their links with prices run both ways.
 
-- Fog and monsoon cloud leave a few district-months with very few clear pixels, even with both satellites. These are filled from nearby months.
-- Some south-west Punjab districts grow cotton in the kharif season, so their July to September NDVI is not only rice.
-- The old and new WPI series do not always agree on the direction of paddy prices in the months they overlap.
-- The latest one or two months of WPI are provisional and can be revised.
-- Before April 2012 the paddy price is the rice index.
-- NDVI drifts slightly upward over the years (about 0.004 a year), which accounts for part of the paddy signal.
-- Government stocks, MSP and export bans partly react to prices, so their links with prices run both ways.
-- The 2005 to 2011 stock figures were typed in from a scanned bulletin and checked against printed totals and a second bulletin.
+## Tools
+
+Python, pandas, Google Earth Engine, SQLAlchemy with SQLite (PostgreSQL ready), statsmodels, scikit-learn, XGBoost, Plotly, Streamlit, pytest.
