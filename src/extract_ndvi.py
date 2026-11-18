@@ -105,7 +105,7 @@ def extract_state(state: str, cropland: ee.Image, months: pd.DatetimeIndex) -> b
         return False
 
     ndvi = pd.DataFrame(all_rows).sort_values(["district", "month"])
-    ndvi.to_csv(state_csv_path(state), index=False)
+    ndvi.to_csv(state_csv_path(state), index=False, lineterminator="\n")
     minutes = (time.time() - start) / 60
     print(
         f"  {state}: {ndvi['district'].nunique()} districts, "
@@ -141,7 +141,7 @@ def main() -> None:
             incomplete.append(state)
 
     ndvi = combine_states()
-    ndvi.to_csv(config.NDVI_CSV, index=False)
+    ndvi.to_csv(config.NDVI_CSV, index=False, lineterminator="\n")
     print(
         f"\nSaved {len(ndvi)} rows to {config.NDVI_CSV} "
         f"({ndvi['state'].nunique()} states, {ndvi['district'].nunique()} districts)"

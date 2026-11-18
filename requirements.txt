@@ -8,6 +8,7 @@ python-calamine==0.9.1
 python-dotenv==1.2.4
 requests==2.34.2
 scikit-learn==1.9.1
+SQLAlchemy==2.1.9
 statsmodels==0.15.0
 streamlit==1.67.0
 xgboost==3.4.1

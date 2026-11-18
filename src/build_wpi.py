@@ -97,7 +97,7 @@ def main() -> None:
         print(f"Linking factor for {crop}: {factor:.4f}")
 
     wpi = splice(old, new, factors)
-    wpi.to_csv(config.WPI_CSV, index=False)
+    wpi.to_csv(config.WPI_CSV, index=False, lineterminator="\n")
     print(
         f"Saved {len(wpi)} rows to {config.WPI_CSV} "
         f"({wpi['month'].min()} to {wpi['month'].max()})"

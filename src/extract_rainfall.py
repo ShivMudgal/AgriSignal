@@ -74,7 +74,7 @@ def main() -> None:
 
     rainfall = pd.DataFrame(all_rows).sort_values(["state", "district", "month"])
     config.RAINFALL_CSV.parent.mkdir(parents=True, exist_ok=True)
-    rainfall.to_csv(config.RAINFALL_CSV, index=False)
+    rainfall.to_csv(config.RAINFALL_CSV, index=False, lineterminator="\n")
     print(
         f"Saved {len(rainfall)} rows to {config.RAINFALL_CSV} "
         f"({rainfall['state'].nunique()} states, {len(months)} months)"

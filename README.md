@@ -53,9 +53,20 @@ The NDVI script saves one file per state in `data/raw/ndvi/`, so if it stops hal
 
 The WPI script downloads two Excel files from eaindustry.nic.in into `data/raw/wpi/`. That site sometimes sends an incomplete security certificate, which Python rejects. If the download fails, the script prints the link, and you can download the file in a browser and save it in that folder.
 
+## Cleaning and the database
+
+```
+python src/clean_data.py
+python src/build_database.py
+```
+
+Cleaning drops three districts with almost no farmland (Kolkata, Hyderabad and a disputed area), leaving 329 districts. NDVI values from fewer than 100 clear pixels are replaced by the value between the months before and after, and marked in an `is_filled` column. Only 3 of 34,545 values needed this.
+
+The database has four tables (`districts`, `ndvi`, `rainfall`, `wpi`) and a view, `district_month`, that puts NDVI and rainfall side by side. The schema is in `sql/schema.sql`. It uses SQLite by default (`db/agrisignal.db`). To use PostgreSQL instead, install `psycopg` and set `DATABASE_URL` in `.env` (see `.env.example`).
+
 ## Known limitations
 
-- Fog (January 2024) and monsoon cloud (July 2024) can leave some district-months with very few clear pixels, even with both satellites.
+- Fog and monsoon cloud leave a few district-months with very few clear pixels, even with both satellites. These are filled from nearby months.
 - Some south-west Punjab districts grow cotton in the kharif season, so their July to September NDVI is not only rice.
 - The old and new WPI series do not always agree on the direction of paddy prices in the months they overlap.
 - The latest one or two months of WPI are provisional and can be revised.

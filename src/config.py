@@ -14,6 +14,11 @@ GEE_PROJECT = os.getenv("GEE_PROJECT")
 RAW_DATA_DIR = PROJECT_ROOT / "data" / "raw"
 PROCESSED_DATA_DIR = PROJECT_ROOT / "data" / "processed"
 DB_PATH = PROJECT_ROOT / "db" / "agrisignal.db"
+SCHEMA_SQL = PROJECT_ROOT / "sql" / "schema.sql"
+
+# SQLite by default. Set DATABASE_URL in .env to use another database,
+# e.g. postgresql+psycopg://user:password@localhost:5432/agrisignal
+DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DB_PATH.as_posix()}")
 
 COUNTRY = "India"
 
@@ -39,3 +44,11 @@ NDVI_CSV = RAW_DATA_DIR / "ndvi_monthly.csv"
 RAINFALL_CSV = RAW_DATA_DIR / "rainfall_monthly.csv"
 WPI_DOWNLOAD_DIR = RAW_DATA_DIR / "wpi"
 WPI_CSV = RAW_DATA_DIR / "wpi_monthly.csv"
+NDVI_CLEAN_CSV = PROCESSED_DATA_DIR / "ndvi_clean.csv"
+RAINFALL_CLEAN_CSV = PROCESSED_DATA_DIR / "rainfall_clean.csv"
+
+# Districts that are almost all city or have no usable cropland.
+EXCLUDED_DISTRICTS = ["Kolkata", "Hyderabad", "Disputed (Ratlam & Mandsaur)"]
+
+# Below this many clear cropland pixels a monthly NDVI value is not reliable.
+MIN_CLEAR_PIXELS = 100
