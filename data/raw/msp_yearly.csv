@@ -1,0 +1,47 @@
+crop,marketing_year,season_start,msp_rs_per_qtl,source
+wheat,2004-05,2004-04,630,Foodgrains Bulletin November 2011 p103
+wheat,2005-06,2005-04,640,Foodgrains Bulletin November 2011 p103
+wheat,2006-07,2006-04,700,Foodgrains Bulletin November 2011 p103
+wheat,2007-08,2007-04,850,Foodgrains Bulletin November 2011 p103
+wheat,2008-09,2008-04,1000,Foodgrains Bulletin November 2011 p103
+wheat,2009-10,2009-04,1080,Foodgrains Bulletin November 2011 p103
+wheat,2010-11,2010-04,1100,Foodgrains Bulletin November 2011 p103
+wheat,2011-12,2011-04,1170,Foodgrains Bulletin November 2011 p103
+wheat,2012-13,2012-04,1285,Foodgrains Bulletin January 2015 p49
+wheat,2013-14,2013-04,1350,dfpd.gov.in MSP for Wheat and Rice
+wheat,2014-15,2014-04,1400,dfpd.gov.in MSP for Wheat and Rice
+wheat,2015-16,2015-04,1450,dfpd.gov.in MSP for Wheat and Rice
+wheat,2016-17,2016-04,1525,dfpd.gov.in MSP for Wheat and Rice
+wheat,2017-18,2017-04,1625,dfpd.gov.in MSP for Wheat and Rice
+wheat,2018-19,2018-04,1735,dfpd.gov.in MSP for Wheat and Rice
+wheat,2019-20,2019-04,1840,dfpd.gov.in MSP for Wheat and Rice
+wheat,2020-21,2020-04,1925,dfpd.gov.in MSP for Wheat and Rice
+wheat,2021-22,2021-04,1975,dfpd.gov.in MSP for Wheat and Rice
+wheat,2022-23,2022-04,2015,dfpd.gov.in MSP for Wheat and Rice
+wheat,2023-24,2023-04,2125,dfpd.gov.in MSP for Wheat and Rice
+wheat,2024-25,2024-04,2275,dfpd.gov.in MSP for Wheat and Rice
+wheat,2025-26,2025-04,2425,dfpd.gov.in MSP for Wheat and Rice
+wheat,2026-27,2026-04,2585,dfpd.gov.in MSP for Wheat and Rice
+paddy,2004-05,2004-10,560,Foodgrains Bulletin November 2011 p103
+paddy,2005-06,2005-10,570,Foodgrains Bulletin November 2011 p103
+paddy,2006-07,2006-10,620,Foodgrains Bulletin November 2011 p103
+paddy,2007-08,2007-10,745,Foodgrains Bulletin November 2011 p103
+paddy,2008-09,2008-10,900,Foodgrains Bulletin November 2011 p103
+paddy,2009-10,2009-10,1000,Foodgrains Bulletin November 2011 p103
+paddy,2010-11,2010-10,1000,Foodgrains Bulletin November 2011 p103
+paddy,2011-12,2011-10,1080,Foodgrains Bulletin November 2011 p103
+paddy,2012-13,2012-10,1250,Foodgrains Bulletin January 2015 p49
+paddy,2013-14,2013-10,1310,dfpd.gov.in MSP for Wheat and Rice
+paddy,2014-15,2014-10,1360,dfpd.gov.in MSP for Wheat and Rice
+paddy,2015-16,2015-10,1410,dfpd.gov.in MSP for Wheat and Rice
+paddy,2016-17,2016-10,1470,dfpd.gov.in MSP for Wheat and Rice
+paddy,2017-18,2017-10,1550,dfpd.gov.in MSP for Wheat and Rice
+paddy,2018-19,2018-10,1750,dfpd.gov.in MSP for Wheat and Rice
+paddy,2019-20,2019-10,1815,dfpd.gov.in MSP for Wheat and Rice
+paddy,2020-21,2020-10,1868,dfpd.gov.in MSP for Wheat and Rice
+paddy,2021-22,2021-10,1940,dfpd.gov.in MSP for Wheat and Rice
+paddy,2022-23,2022-10,2040,dfpd.gov.in MSP for Wheat and Rice
+paddy,2023-24,2023-10,2183,dfpd.gov.in MSP for Wheat and Rice
+paddy,2024-25,2024-10,2300,dfpd.gov.in MSP for Wheat and Rice
+paddy,2025-26,2025-10,2369,dfpd.gov.in MSP for Wheat and Rice
+paddy,2026-27,2026-10,2441,dfpd.gov.in MSP for Wheat and Rice

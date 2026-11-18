@@ -1,0 +1,9 @@
+event,crop,start,end,source
+wheat_export_ban,wheat,2007-02-09,2011-09-09,"Lok Sabha answer (eparlib.nic.in/bitstream/123456789/609274/1/111415.pdf); DGFT notification of 09.09.2011 (apeda.gov.in/sites/default/files/dgft_notifications/Notification_of_wheat09.09.2011.doc)"
+rice_export_ban,paddy,2008-04-01,2011-09-09,"Lok Sabha answer (eparlib.nic.in/bitstream/123456789/609274/1/111415.pdf); DGFT notification 71 of 09.09.2011 (apeda.gov.in/sites/default/files/dgft_notifications/Notification_71_09_09_2011.pdf)"
+wheat_export_ban,wheat,2022-05-13,,"DGFT notification 06/2015-2020 of 13.05.2022 (agriexchange.apeda.gov.in, USDA GAIN report IN2022-0046); still in force at the end of the data"
+broken_rice_export_ban,paddy,2022-09-09,2025-03-07,"DGFT notification of September 2022; ban lifted by DGFT notification of 07.03.2025 (reported by agronfoodprocessing.com)"
+rice_export_ban,paddy,2023-07-20,2024-09-28,"DGFT notification of 20.07.2023; lifted by DGFT notification 32/2024-25 (taxscan.in, tribuneindia.com)"
+wheat_stock_limit,wheat,2023-06-12,2024-03-31,"PIB release 1931805 (pib.gov.in/PressReleasePage.aspx?PRID=1931805)"
+wheat_stock_limit,wheat,2024-06-24,2025-03-31,"Department of Food and Public Distribution order of 24.06.2024 (newsonair.gov.in, businessworld.in)"
+wheat_stock_limit,wheat,2025-05-27,2026-03-31,"Department of Food and Public Distribution order of 27.05.2025 (theprint.in, PTI)"
