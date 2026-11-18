@@ -14,6 +14,7 @@ GEE_PROJECT = os.getenv("GEE_PROJECT")
 RAW_DATA_DIR = PROJECT_ROOT / "data" / "raw"
 PROCESSED_DATA_DIR = PROJECT_ROOT / "data" / "processed"
 DB_PATH = PROJECT_ROOT / "db" / "agrisignal.db"
+FIGURES_DIR = PROJECT_ROOT / "reports" / "figures"
 SCHEMA_SQL = PROJECT_ROOT / "sql" / "schema.sql"
 
 # SQLite by default. Set DATABASE_URL in .env to use another database,
