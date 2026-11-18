@@ -64,6 +64,19 @@ Cleaning drops three districts with almost no farmland (Kolkata, Hyderabad and a
 
 The database has four tables (`districts`, `ndvi`, `rainfall`, `wpi`) and a view, `district_month`, that puts NDVI and rainfall side by side. The schema is in `sql/schema.sql`. It uses SQLite by default (`db/agrisignal.db`). To use PostgreSQL instead, install `psycopg` and set `DATABASE_URL` in `.env` (see `.env.example`).
 
+## Exploring the data
+
+```
+python src/build_national.py
+```
+
+This combines the districts into one national monthly series per crop (wheat states and rice states), weighting each district by its farmland. The analysis is in `notebooks/01_eda.ipynb`. Main findings so far:
+
+- The calendar explains a lot: wheat prices usually fall from February to June after the harvest and rise for the rest of the year.
+- Greener than normal wheat states go with smaller wheat price rises 2 to 3 months later (correlation about -0.25).
+- For paddy, more rain than normal goes with smaller price rises over the next 1 to 3 months (about -0.25).
+- These are weak signals from about 100 months of data, and still need proper testing.
+
 ## Known limitations
 
 - Fog and monsoon cloud leave a few district-months with very few clear pixels, even with both satellites. These are filled from nearby months.
