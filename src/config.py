@@ -55,9 +55,18 @@ NDVI_CLEAN_CSV = PROCESSED_DATA_DIR / "ndvi_clean.csv"
 RAINFALL_CLEAN_CSV = PROCESSED_DATA_DIR / "rainfall_clean.csv"
 TEMPERATURE_CLEAN_CSV = PROCESSED_DATA_DIR / "temperature_clean.csv"
 NATIONAL_CSV = PROCESSED_DATA_DIR / "national_monthly.csv"
+FEATURES_CSV = PROCESSED_DATA_DIR / "features_monthly.csv"
 
 # Districts that are almost all city or have no usable cropland.
 EXCLUDED_DISTRICTS = ["Kolkata", "Hyderabad", "Disputed (Ratlam & Mandsaur)"]
 
 # Below this many clear cropland pixels a monthly NDVI value is not reliable.
 MIN_CLEAR_PIXELS = 100
+
+# "Normal" for a month is the same calendar month in the previous few years.
+ANOMALY_YEARS = 5
+MIN_HISTORY_YEARS = 3
+
+# Predictions are scored on months from here on; earlier months are only
+# used for learning.
+EVAL_START = "2012-01"
