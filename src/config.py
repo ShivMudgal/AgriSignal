@@ -56,6 +56,7 @@ RAINFALL_CLEAN_CSV = PROCESSED_DATA_DIR / "rainfall_clean.csv"
 TEMPERATURE_CLEAN_CSV = PROCESSED_DATA_DIR / "temperature_clean.csv"
 NATIONAL_CSV = PROCESSED_DATA_DIR / "national_monthly.csv"
 FEATURES_CSV = PROCESSED_DATA_DIR / "features_monthly.csv"
+PREDICTIONS_CSV = PROCESSED_DATA_DIR / "predictions.csv"
 
 # Districts that are almost all city or have no usable cropland.
 EXCLUDED_DISTRICTS = ["Kolkata", "Hyderabad", "Disputed (Ratlam & Mandsaur)"]
