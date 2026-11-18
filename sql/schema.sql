@@ -33,11 +33,13 @@ CREATE TABLE rainfall (
 );
 
 CREATE TABLE wpi (
-    crop   TEXT NOT NULL CHECK (crop IN ('wheat', 'paddy')),
+    item   TEXT NOT NULL CHECK (
+        item IN ('wheat', 'paddy', 'all_commodities', 'food_articles', 'diesel')
+    ),
     month  DATE NOT NULL,
     wpi    REAL NOT NULL CHECK (wpi > 0),
     series TEXT NOT NULL,
-    PRIMARY KEY (crop, month)
+    PRIMARY KEY (item, month)
 );
 
 -- One row per district and month with crop health and rainfall side by side.

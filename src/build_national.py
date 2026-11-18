@@ -1,4 +1,4 @@
-"""Combine district data into one national monthly series per crop."""
+"""Combine district data into one national monthly series per crop, with prices."""
 
 import pandas as pd
 from sqlalchemy import Engine
@@ -22,6 +22,9 @@ JOIN districts AS d ON d.district_id = n.district_id
 
 # Which districts feed each crop's national series.
 CROP_STATE_FLAGS = {"wheat": "in_wheat_states", "paddy": "in_rice_states"}
+
+# Economy-wide price indices used alongside each crop's own price.
+OTHER_PRICE_ITEMS = ["all_commodities", "food_articles", "diesel"]
 
 
 def load_district_months(engine: Engine) -> pd.DataFrame:
@@ -59,8 +62,20 @@ def national_series(data: pd.DataFrame, wpi: pd.DataFrame) -> pd.DataFrame:
 
     national = pd.concat(tables, ignore_index=True)
     national["month"] = national["month"].astype(str).str[:7]
-    national = national.merge(wpi[["crop", "month", "wpi"]], on=["crop", "month"])
-    return national[["crop", "month", "ndvi", "rainfall_mm", "wpi", "districts"]]
+
+    crop_prices = wpi.rename(columns={"item": "crop", "series": "wpi_series"})
+    national = national.merge(crop_prices, on=["crop", "month"])
+
+    # The same economy-wide indices go next to both crops.
+    other_prices = wpi[wpi["item"].isin(OTHER_PRICE_ITEMS)].pivot(
+        index="month", columns="item", values="wpi"
+    )
+    national = national.join(other_prices, on="month")
+    return national[
+        ["crop", "month", "ndvi", "rainfall_mm", "wpi", "wpi_series"]
+        + OTHER_PRICE_ITEMS
+        + ["districts"]
+    ]
 
 
 def main() -> None:
