@@ -8,6 +8,7 @@ from matplotlib.collections import PolyCollection
 from matplotlib.colors import TwoSlopeNorm
 
 import config
+from build_features import nearby_anomaly
 
 MAP_MONTH = "2022-03"
 RULES = ["always_up", "calendar", "momentum"]
@@ -24,13 +25,11 @@ def district_polygons(geojson: dict) -> dict[str, list]:
 
 
 def crop_health_map(path) -> None:
-    """Map of each district's NDVI compared with its usual value for that month."""
+    """Map of each district's NDVI compared with the same month in nearby years."""
     ndvi = pd.read_csv(config.NDVI_CLEAN_CSV)
-    calendar_month = ndvi["month"].str[5:7]
-    normal = ndvi.groupby(["state", "district", calendar_month])["ndvi"].transform(
-        "mean"
-    )
-    ndvi["vs_normal"] = ndvi["ndvi"] - normal
+    ndvi = ndvi.sort_values(["state", "district", "month"]).reset_index(drop=True)
+    groups = [ndvi["state"], ndvi["district"], ndvi["month"].str[5:7]]
+    ndvi["vs_normal"] = nearby_anomaly(ndvi["ndvi"], groups)
     month = ndvi[ndvi["month"] == MAP_MONTH]
     values = dict(zip(month["state"] + "|" + month["district"], month["vs_normal"]))
 
@@ -54,7 +53,9 @@ def crop_health_map(path) -> None:
     ax.autoscale_view()
     ax.set_aspect("equal")
     ax.axis("off")
-    figure.colorbar(collection, ax=ax, shrink=0.6, label="NDVI vs usual March")
+    figure.colorbar(
+        collection, ax=ax, shrink=0.6, label="NDVI vs March in nearby years"
+    )
     ax.set_title("Crop health in March 2022, the heatwave month")
     figure.tight_layout()
     figure.savefig(path, dpi=150)

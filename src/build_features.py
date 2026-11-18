@@ -23,6 +23,24 @@ def past_anomaly(series: pd.Series, calendar_month: pd.Series) -> pd.Series:
     return series - previous
 
 
+def nearby_anomaly(series: pd.Series, groups: list[pd.Series]) -> pd.Series:
+    """Value minus the mean of the same month in the years either side of it.
+
+    For charts only: it looks at later years too, so a model must not use it.
+    Comparing with nearby years stops a slow trend from making every early
+    year look bad and every recent year look good. Rows must be in time order
+    within each group, which should include the calendar month.
+    """
+
+    def compare(values: pd.Series) -> pd.Series:
+        window = values.rolling(2 * config.NEARBY_YEARS + 1, center=True, min_periods=1)
+        others_total = window.sum() - values
+        others_count = window.count() - 1
+        return values - others_total / others_count
+
+    return series.groupby(groups).transform(compare)
+
+
 def crop_features(data: pd.DataFrame) -> pd.DataFrame:
     """Build the features for one crop (rows must be in month order)."""
     features = pd.DataFrame(

@@ -63,3 +63,18 @@ def test_parse_grid_reads_rows_even_with_a_garbled_label():
     assert stocks["month"].tolist() == ["2015-01", "2015-02"]
     assert stocks["wheat"].tolist() == [30.0, 40.0]
     assert stocks["rice"].tolist() == [10.0, 20.0]
+
+
+def test_nearby_anomaly_ignores_a_steady_trend():
+    from build_features import nearby_anomaly
+
+    calendar_month = pd.Series([8] * 7)
+    trend = pd.Series([0.40, 0.41, 0.42, 0.43, 0.44, 0.45, 0.46])
+    anomaly = nearby_anomaly(trend, [calendar_month])
+    # A middle year on a straight-line trend is exactly normal for its era.
+    assert anomaly.iloc[3] == pytest.approx(0.0)
+
+    spike = trend.copy()
+    spike.iloc[3] = 0.33
+    # A real bad year still stands out by its full size.
+    assert nearby_anomaly(spike, [calendar_month]).iloc[3] == pytest.approx(-0.10)

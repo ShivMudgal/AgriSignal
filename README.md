@@ -4,7 +4,7 @@ Can satellite pictures of crops predict where Indian grain prices go next? AgriS
 
 ![Crop health in March 2022](reports/figures/crop_health_march_2022.png)
 
-*March 2022: the wheat belt (Punjab, Haryana, western Uttar Pradesh) was browner than usual just before the harvest, during an early heatwave. Wheat prices rose 3.2% that month, and wheat exports were banned in May.*
+*March 2022, during an early heatwave just before the wheat harvest: parts of the wheat belt, especially Haryana and western Uttar Pradesh, were browner than in the same month of nearby years. The heat mostly shrank the grain rather than browning the leaves, so the damage looks milder from space than it was in the fields. Wheat prices rose 3.2% that month, and wheat exports were banned in May.*
 
 ## What I found
 
@@ -112,7 +112,7 @@ Tests: `pytest tests`
 - About 225 months of usable data is not much for a model. The results are stated with that in mind.
 - Fog and monsoon cloud leave a few district-months with too few clear pixels; these are filled from the months either side and flagged.
 - NDVI does not separate crops: in the kharif season it includes cotton and soybean as well as rice.
-- NDVI drifts slightly upward over the years. The model features compare each month with only the previous five years, which absorbs most of this.
+- NDVI drifts slightly upward over the years. The model features compare each month with only the previous five years, which absorbs most of this. The maps and charts compare each month with the five years either side instead, which also uses later years, so they are for looking at the data, not for prediction.
 - Before April 2012 the paddy price is the rice index, and the latest one or two months of WPI are provisional.
 - Government stocks, support prices and export bans partly react to prices, so their links with prices run both ways.
 

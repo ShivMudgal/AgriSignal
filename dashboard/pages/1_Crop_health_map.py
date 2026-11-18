@@ -22,8 +22,10 @@ st.set_page_config(page_title="Crop health map", layout="wide")
 st.title("Crop health map")
 st.markdown(
     "NDVI measures how green the cropland is (higher is greener). The map shows each "
-    "district compared with its own average for that calendar month over 2005-2026, so "
-    "green means healthier crops than usual and brown means worse."
+    "district compared with the same month in the five years before and after, so "
+    "green means healthier crops than usual for that time and brown means worse. "
+    "Comparing with nearby years keeps the slow greening of Indian farmland since 2005 "
+    "from making every early year look bad."
 )
 
 ndvi = load_district_ndvi()
@@ -38,9 +40,9 @@ with st.sidebar:
     calendar_month = MONTH_NAMES.index(month_name) + 1
     st.info(SEASON_NOTES[SEASONS.get(calendar_month)])
     st.caption(
-        "Worth a look: March 2022 (heatwave in the wheat belt), August 2009 "
-        "(drought year), and February vs May in any year (before and after the "
-        "wheat harvest)."
+        "Worth a look: March 2022 (heatwave, browner in Haryana and western Uttar "
+        "Pradesh), August 2014 and August 2023 (weak monsoons), and February vs "
+        "May in any year (before and after the wheat harvest)."
     )
 sidebar_about()
 
@@ -78,6 +80,8 @@ st.plotly_chart(figure, use_container_width=True)
 st.caption(
     f"{month_name} {year}. Average across districts: "
     f"{data['ndvi_vs_normal'].mean():+.3f} vs normal. Hover over a district for its "
-    "name and values. Kolkata, Hyderabad and a disputed area are left out because "
-    "they have almost no farmland."
+    "name and values. Years near the start or end of the data can only be compared "
+    "with later or earlier years, so treat 2005, 2006, 2025 and 2026 with a little "
+    "care. Kolkata, Hyderabad and a disputed area are left out because they have "
+    "almost no farmland."
 )

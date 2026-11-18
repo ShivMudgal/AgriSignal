@@ -74,3 +74,6 @@ MIN_HISTORY_YEARS = 3
 # Predictions are scored on months from here on; earlier months are only
 # used for learning.
 EVAL_START = "2012-01"
+
+# Charts compare a month with the same month this many years either side.
+NEARBY_YEARS = 5

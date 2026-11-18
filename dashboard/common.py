@@ -1,12 +1,17 @@
 """Data loading shared by every dashboard page."""
 
 import json
+import sys
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 
-DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.append(str(PROJECT_ROOT / "src"))
+from build_features import nearby_anomaly  # noqa: E402
+
+DATA_DIR = PROJECT_ROOT / "data"
 PROCESSED_DIR = DATA_DIR / "processed"
 RAW_DIR = DATA_DIR / "raw"
 
@@ -26,23 +31,21 @@ MONTH_NAMES += ["Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 def load_national() -> pd.DataFrame:
     """National monthly table, one row per crop and month."""
     national = pd.read_csv(PROCESSED_DIR / "national_monthly.csv")
+    national = national.sort_values(["crop", "month"]).reset_index(drop=True)
     national["date"] = pd.to_datetime(national["month"])
-    calendar_month = national["date"].dt.month
+    groups = [national["crop"], national["date"].dt.month]
     for column in ["ndvi", "tmax_c", "rainfall_mm"]:
-        normal = national.groupby(["crop", calendar_month])[column].transform("mean")
-        national[f"{column}_vs_normal"] = national[column] - normal
+        national[f"{column}_vs_normal"] = nearby_anomaly(national[column], groups)
     return national
 
 
 @st.cache_data
 def load_district_ndvi() -> pd.DataFrame:
-    """District NDVI with the difference from the average for that calendar month."""
+    """District NDVI compared with the same month in the years either side."""
     ndvi = pd.read_csv(PROCESSED_DIR / "ndvi_clean.csv")
-    calendar_month = ndvi["month"].str[5:7]
-    normal = ndvi.groupby(["state", "district", calendar_month])["ndvi"].transform(
-        "mean"
-    )
-    ndvi["ndvi_vs_normal"] = (ndvi["ndvi"] - normal).round(3)
+    ndvi = ndvi.sort_values(["state", "district", "month"]).reset_index(drop=True)
+    groups = [ndvi["state"], ndvi["district"], ndvi["month"].str[5:7]]
+    ndvi["ndvi_vs_normal"] = nearby_anomaly(ndvi["ndvi"], groups).round(3)
     ndvi["key"] = ndvi["state"] + "|" + ndvi["district"]
     return ndvi
 
