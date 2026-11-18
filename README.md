@@ -119,6 +119,23 @@ Logistic regression and XGBoost predict whether the price will be higher 1, 2 or
 
 In short: satellite crop health measurably improves 3-month wheat forecasts, but the gain over a well-chosen calendar rule is modest, and paddy prices, which rise steadily, seem shaped more by government buying at the support price than by crop conditions.
 
+## Dashboard
+
+```
+python src/forecast.py
+python src/export_districts.py
+streamlit run dashboard/Overview.py
+```
+
+`forecast.py` retrains the best model for each crop and horizon on all the data and predicts the 1 to 3 months after the data ends. `export_districts.py` saves simplified district boundaries for the map. The dashboard has four pages:
+
+- **Overview**: the question, the main results and accuracy against the simple rules
+- **Crop health map**: every district's NDVI compared with normal, for any month since 2005
+- **Prices and signals**: each crop's price with crop health, heat, rainfall, stocks or MSP underneath, and export bans shaded
+- **Forecasts**: the latest forecast and each model's month by month track record
+
+The dashboard only reads the committed files in `data/`, so it runs without Earth Engine or the database.
+
 ## Known limitations
 
 - Fog and monsoon cloud leave a few district-months with very few clear pixels, even with both satellites. These are filled from nearby months.
