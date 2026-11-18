@@ -40,11 +40,11 @@ def clean_ndvi(ndvi: pd.DataFrame) -> pd.DataFrame:
 
 
 def clean_temperature(temperature: pd.DataFrame) -> pd.DataFrame:
-    """Fill months where clouds hid the ground for the whole month."""
+    """Fill any missing temperature from the months on either side."""
     temperature = temperature.sort_values(["state", "district", "month"])
-    return fill_gaps(
-        temperature, "lst_day_c", temperature["lst_day_c"].isna(), decimals=2
-    )
+    missing = temperature[["tmean_c", "tmax_c"]].isna().any(axis=1)
+    temperature = fill_gaps(temperature, "tmean_c", missing, decimals=2)
+    return fill_gaps(temperature, "tmax_c", missing, decimals=2)
 
 
 def save(table: pd.DataFrame, path, name: str) -> None:

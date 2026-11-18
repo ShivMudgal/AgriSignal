@@ -36,11 +36,12 @@ CREATE TABLE rainfall (
     PRIMARY KEY (district_id, month)
 );
 
--- Daytime land surface temperature over cropland, in degrees Celsius.
+-- Monthly mean and hottest air temperature (ERA5-Land), in degrees Celsius.
 CREATE TABLE temperature (
     district_id INTEGER NOT NULL REFERENCES districts (district_id),
     month       DATE NOT NULL,
-    lst_day_c   REAL NOT NULL CHECK (lst_day_c BETWEEN -30 AND 70),
+    tmean_c     REAL NOT NULL CHECK (tmean_c BETWEEN -40 AND 55),
+    tmax_c      REAL NOT NULL CHECK (tmax_c BETWEEN -40 AND 60),
     is_filled   BOOLEAN NOT NULL,
     PRIMARY KEY (district_id, month)
 );
@@ -93,7 +94,8 @@ SELECT
     n.pixel_count,
     n.is_filled,
     r.rainfall_mm,
-    t.lst_day_c
+    t.tmean_c,
+    t.tmax_c
 FROM ndvi AS n
 JOIN rainfall AS r ON r.district_id = n.district_id AND r.month = n.month
 JOIN temperature AS t ON t.district_id = n.district_id AND t.month = n.month

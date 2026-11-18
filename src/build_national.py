@@ -15,7 +15,8 @@ SELECT
     n.ndvi,
     n.pixel_count,
     r.rainfall_mm,
-    t.lst_day_c
+    t.tmean_c,
+    t.tmax_c
 FROM ndvi AS n
 JOIN rainfall AS r ON r.district_id = n.district_id AND r.month = n.month
 JOIN temperature AS t ON t.district_id = n.district_id AND t.month = n.month
@@ -62,7 +63,8 @@ def crop_conditions(data: pd.DataFrame) -> pd.DataFrame:
             {
                 "ndvi": weighted_monthly_mean(crop_data, "ndvi").round(4),
                 "rainfall_mm": weighted_monthly_mean(crop_data, "rainfall_mm").round(1),
-                "lst_day_c": weighted_monthly_mean(crop_data, "lst_day_c").round(2),
+                "tmean_c": weighted_monthly_mean(crop_data, "tmean_c").round(2),
+                "tmax_c": weighted_monthly_mean(crop_data, "tmax_c").round(2),
                 "districts": crop_data.groupby("month")["district_id"].nunique(),
             }
         )
@@ -146,7 +148,7 @@ def main() -> None:
         national, pd.read_sql("SELECT * FROM policy_events", engine)
     )
 
-    columns = ["crop", "month", "ndvi", "rainfall_mm", "lst_day_c", "wpi"]
+    columns = ["crop", "month", "ndvi", "rainfall_mm", "tmean_c", "tmax_c", "wpi"]
     columns += ["wpi_series"] + OTHER_PRICE_ITEMS
     columns += ["stock_lakh_t", "msp_rs_per_qtl"] + list(POLICY_FLAGS)
     columns += ["districts"]
@@ -156,9 +158,7 @@ def main() -> None:
         raise SystemExit("The national table has missing values.")
     national.to_csv(config.NATIONAL_CSV, index=False, lineterminator="\n")
     print(f"Saved {len(national)} rows to {config.NATIONAL_CSV}")
-    print(
-        national.groupby("crop")[["ndvi", "lst_day_c", "stock_lakh_t"]].mean().round(2)
-    )
+    print(national.groupby("crop")[["ndvi", "tmax_c", "stock_lakh_t"]].mean().round(2))
 
 
 if __name__ == "__main__":
