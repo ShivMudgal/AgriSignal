@@ -53,3 +53,6 @@ EXCLUDED_DISTRICTS = ["Kolkata", "Hyderabad", "Disputed (Ratlam & Mandsaur)"]
 
 # Below this many clear cropland pixels a monthly NDVI value is not reliable.
 MIN_CLEAR_PIXELS = 100
+FCI_DOWNLOAD_DIR = RAW_DATA_DIR / "fci"
+FCI_TRANSCRIBED_CSV = RAW_DATA_DIR / "fci_stocks_transcribed.csv"
+FCI_STOCKS_CSV = RAW_DATA_DIR / "fci_stocks_monthly.csv"

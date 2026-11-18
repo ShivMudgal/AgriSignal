@@ -11,11 +11,14 @@ Still in progress.
 |---|---|---|
 | Crop health (NDVI) | NASA MODIS Terra and Aqua (MOD13Q1, MYD13Q1) on Google Earth Engine, cropland only (ESA WorldCover), cloudy pixels removed | 332 districts in 10 states, monthly |
 | Rainfall | CHIRPS v3 daily rainfall, summed per month | Same districts, monthly |
-| Prices | Wholesale Price Index (WPI) for wheat and paddy, Office of the Economic Adviser | All-India, monthly |
+| Prices | Wholesale Price Index (WPI) for wheat, paddy, all commodities, food articles and diesel, Office of the Economic Adviser | All-India, monthly |
+| Government grain stocks | Wheat and rice in the central pool on the 1st of each month, from the Foodgrains Bulletin of the Department of Food and Public Distribution | All-India, monthly |
 
-All three cover January 2018 to September 2026. District boundaries come from FAO GAUL 2025.
+Everything covers January 2005 to September 2026. District boundaries come from FAO GAUL 2025.
 
-WPI changed its base year from 2011-12 to 2022-23. The new series starts in April 2023, so I joined the two series at that month: the old series is rescaled so both agree in April 2023, which keeps every real monthly up and down move.
+WPI has been published with three base years (2004-05, 2011-12 and 2022-23). I chain-linked them item by item: each older series is rescaled so it matches the newer one in the newer series' first month, which keeps every real monthly up and down move. Before April 2012 there is no paddy index, so the rice index stands in for it (marked in the data).
+
+The grain stock figures come from six bulletins (2015 to 2026), each covering about three years, so most months are reported twice and the overlaps are checked against each other. 2005 to 2011 only exists as a scanned bulletin (November 2011, from the Internet Archive copy of the old dfpd.nic.in site), so I typed that table into `data/raw/fci_stocks_transcribed.csv`. Every month is checked: rice, wheat and coarse grains must add up to the printed total, and the 2005 to April 2009 values must also appear in the March 2009 bulletin.
 
 ## Tools Used
 
