@@ -104,6 +104,21 @@ python src/baselines.py
 - Past price changes (momentum) pass for both crops.
 - Paddy NDVI, heat, rainfall, stock changes, food inflation, MSP changes and export bans do not pass for either crop.
 
+## Models
+
+```
+python src/train_models.py
+```
+
+Logistic regression and XGBoost predict whether the price will be higher 1, 2 or 3 months later. They are tested walk-forward: for every month from 2012 the models are retrained on all earlier months whose outcome was known, then make one prediction. Each model is trained twice, with and without the NDVI inputs, so the value of the satellite data shows up directly. The analysis is in `notebooks/03_models.ipynb`.
+
+- Wheat, 3 months ahead: adding NDVI raises accuracy from 73.0% to 79.9% (XGBoost), against 75.3% for the best simple rule (calendar). Only the models with NDVI produce better probability forecasts than the calendar (Brier score 0.150 vs 0.173, p = 0.016).
+- The accuracy gain over the calendar rule (+4.6 points over 174 months) is not statistically significant (McNemar p = 0.24), and the edge varies from year to year.
+- Wheat 1 and 2 months ahead: NDVI adds nothing; momentum and the calendar do the work.
+- Paddy: no model beats the simple rules. At 3 months, "always up" (75.3%) is significantly better than every model.
+
+In short: satellite crop health measurably improves 3-month wheat forecasts, but the gain over a well-chosen calendar rule is modest, and paddy prices are driven by the government's support price rather than crop conditions.
+
 ## Known limitations
 
 - Fog and monsoon cloud leave a few district-months with very few clear pixels, even with both satellites. These are filled from nearby months.
