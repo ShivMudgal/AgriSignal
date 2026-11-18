@@ -89,6 +89,21 @@ This combines the districts into one national monthly series per crop (wheat sta
 - Rainfall, stock changes and export bans show no clear link. On 2018 to 2026 data alone, paddy rainfall looked as strong as NDVI; with 21 years it disappears.
 - Each signal on its own is weak, so the next step is to test whether together they beat the calendar on months a model has not seen.
 
+## Testing the signals
+
+```
+python src/build_features.py
+python src/baselines.py
+```
+
+`build_features.py` turns the national table into model features using only past information: each anomaly compares a month with the same calendar month in the previous five years. `baselines.py` scores three simple rules (always up, same direction as usual for the calendar month, same direction as recent momentum) on 2012 to 2026. The best of them already calls the price direction right 68% to 75% of the time, which is the bar a model has to beat.
+
+`notebooks/02_signal_tests.ipynb` runs Granger causality tests: does a signal improve the forecast of next month's price change beyond past price changes and the calendar? With 48 tests, the p-values are adjusted for multiple testing (Benjamini-Hochberg). Results:
+
+- Wheat NDVI passes at 1, 2 and 3 lags (adjusted p = 0.002 to 0.039). Greener than recent years means a smaller price rise; a typical anomaly moves next month's wheat price change by about 0.4 percentage points.
+- Past price changes (momentum) pass for both crops.
+- Paddy NDVI, heat, rainfall, stock changes, food inflation, MSP changes and export bans do not pass for either crop.
+
 ## Known limitations
 
 - Fog and monsoon cloud leave a few district-months with very few clear pixels, even with both satellites. These are filled from nearby months.
