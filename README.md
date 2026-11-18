@@ -1,5 +1,7 @@
 # AgriSignal
 
+**Live dashboard: [agrisignal.streamlit.app](https://agrisignal.streamlit.app/)**
+
 Can satellite pictures of crops predict where Indian grain prices go next? AgriSignal measures crop health from space in 329 districts across India's main wheat and rice states, combines it with weather and government data, and tests whether that helps predict if all-India wheat and paddy prices will rise over the next 1 to 3 months.
 
 ![Heat and crop health in March 2022](reports/figures/heatwave_march_2022.png)

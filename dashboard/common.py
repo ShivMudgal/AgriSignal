@@ -124,6 +124,9 @@ def sidebar_about() -> None:
             "Sources: NASA MODIS, CHIRPS, ERA5-Land, Office of the Economic Adviser "
             "(WPI), Department of Food and Public Distribution."
         )
+        st.markdown(
+            "[Code and full write-up on GitHub](https://github.com/ShivMudgal/AgriSignal)"
+        )
 
 
 def accuracy_table(predictions: pd.DataFrame) -> pd.DataFrame:
