@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.collections import PolyCollection
 from matplotlib.colors import TwoSlopeNorm
+from shapely.geometry import shape
+from shapely.ops import unary_union
 
 import config
 from build_features import nearby_anomaly
@@ -14,51 +16,113 @@ MAP_MONTH = "2022-03"
 RULES = ["always_up", "calendar", "momentum"]
 
 
-def district_polygons(geojson: dict) -> dict[str, list]:
-    """Outer rings of every district, keyed by 'state|district'."""
-    polygons = {}
+# Short labels for the state names drawn on the map.
+STATE_LABELS = {
+    "Punjab": "Punjab",
+    "Haryana": "Haryana",
+    "Rajasthan": "Rajasthan",
+    "Uttar Pradesh": "Uttar Pradesh",
+    "Madhya Pradesh": "Madhya Pradesh",
+    "Chhattisgarh": "Chhattisgarh",
+    "Odisha": "Odisha",
+    "West Bengal": "W. Bengal",
+    "Telangana": "Telangana",
+    "Andhra Pradesh": "Andhra P.",
+}
+
+
+def load_districts() -> list[dict]:
+    """District shapes with their state, district and shapely geometry."""
+    geojson = json.loads(config.DISTRICTS_GEOJSON.read_text())
+    districts = []
     for feature in geojson["features"]:
         props = feature["properties"]
-        key = f"{props['state']}|{props['district']}"
-        polygons[key] = [polygon[0] for polygon in feature["geometry"]["coordinates"]]
-    return polygons
+        districts.append(
+            {
+                "key": f"{props['state']}|{props['district']}",
+                "state": props["state"],
+                "rings": [polygon[0] for polygon in feature["geometry"]["coordinates"]],
+                "geometry": shape(feature["geometry"]),
+            }
+        )
+    return districts
 
 
-def crop_health_map(path) -> None:
-    """Map of each district's NDVI compared with the same month in nearby years."""
-    ndvi = pd.read_csv(config.NDVI_CLEAN_CSV)
-    ndvi = ndvi.sort_values(["state", "district", "month"]).reset_index(drop=True)
-    groups = [ndvi["state"], ndvi["district"], ndvi["month"].str[5:7]]
-    ndvi["vs_normal"] = nearby_anomaly(ndvi["ndvi"], groups)
-    month = ndvi[ndvi["month"] == MAP_MONTH]
-    values = dict(zip(month["state"] + "|" + month["district"], month["vs_normal"]))
+def anomaly_for_month(path, column: str) -> dict[str, float]:
+    """Each district's value compared with the same month in nearby years."""
+    data = pd.read_csv(path)
+    data = data.sort_values(["state", "district", "month"]).reset_index(drop=True)
+    groups = [data["state"], data["district"], data["month"].str[5:7]]
+    data["vs_normal"] = nearby_anomaly(data[column], groups)
+    month = data[data["month"] == MAP_MONTH]
+    return dict(zip(month["state"] + "|" + month["district"], month["vs_normal"]))
 
-    polygons = district_polygons(json.loads(config.DISTRICTS_GEOJSON.read_text()))
+
+def draw_map(ax, districts, values, cmap, limit, label) -> None:
+    """Colour districts by value, with state borders and names on top."""
     shapes, colors = [], []
-    for key, rings in polygons.items():
-        if key in values:
-            shapes.extend(rings)
-            colors.extend([values[key]] * len(rings))
+    for district in districts:
+        if district["key"] in values:
+            shapes.extend(district["rings"])
+            colors.extend([values[district["key"]]] * len(district["rings"]))
 
-    figure, ax = plt.subplots(figsize=(7, 6.5))
     collection = PolyCollection(
         shapes,
         array=pd.Series(colors),
-        cmap="BrBG",
-        norm=TwoSlopeNorm(vcenter=0, vmin=-0.1, vmax=0.1),
+        cmap=cmap,
+        norm=TwoSlopeNorm(vcenter=0, vmin=-limit, vmax=limit),
         edgecolors="white",
-        linewidths=0.2,
+        linewidths=0.15,
     )
     ax.add_collection(collection)
+
+    for state in STATE_LABELS:
+        outline = unary_union(
+            [d["geometry"].buffer(0.01) for d in districts if d["state"] == state]
+        )
+        parts = getattr(outline, "geoms", [outline])
+        for part in parts:
+            x, y = part.exterior.xy
+            ax.plot(x, y, color="#333333", linewidth=0.8)
+        point = outline.representative_point()
+        ax.annotate(
+            STATE_LABELS[state],
+            (point.x, point.y),
+            ha="center",
+            va="center",
+            fontsize=7.5,
+            color="#222222",
+            bbox={
+                "boxstyle": "round,pad=0.15",
+                "fc": "white",
+                "ec": "none",
+                "alpha": 0.7,
+            },
+        )
+
     ax.autoscale_view()
     ax.set_aspect("equal")
     ax.axis("off")
-    figure.colorbar(
-        collection, ax=ax, shrink=0.6, label="NDVI vs March in nearby years"
+    colorbar = plt.colorbar(collection, ax=ax, shrink=0.55, pad=0.01)
+    colorbar.set_label(label, fontsize=9)
+
+
+def heatwave_map(path) -> None:
+    """Heat and crop health side by side for the March 2022 heatwave."""
+    districts = load_districts()
+    heat = anomaly_for_month(config.TEMPERATURE_CLEAN_CSV, "tmax_c")
+    health = anomaly_for_month(config.NDVI_CLEAN_CSV, "ndvi")
+
+    figure, axes = plt.subplots(1, 2, figsize=(13, 6.2))
+    draw_map(axes[0], districts, heat, "RdBu_r", 3.0, "deg C vs March in nearby years")
+    axes[0].set_title("Hottest temperature", fontsize=12)
+    draw_map(axes[1], districts, health, "BrBG", 0.05, "NDVI vs March in nearby years")
+    axes[1].set_title("Crop health (NDVI)", fontsize=12)
+    figure.suptitle(
+        "March 2022: an early heatwave just before the wheat harvest", fontsize=14
     )
-    ax.set_title("Crop health in March 2022, the heatwave month")
     figure.tight_layout()
-    figure.savefig(path, dpi=150)
+    figure.savefig(path, dpi=150, facecolor="white")
     plt.close(figure)
 
 
@@ -103,7 +167,7 @@ def accuracy_chart(path) -> None:
 
 def main() -> None:
     config.FIGURES_DIR.mkdir(parents=True, exist_ok=True)
-    crop_health_map(config.FIGURES_DIR / "crop_health_march_2022.png")
+    heatwave_map(config.FIGURES_DIR / "heatwave_march_2022.png")
     accuracy_chart(config.FIGURES_DIR / "accuracy.png")
     print(f"Saved figures to {config.FIGURES_DIR}")
 

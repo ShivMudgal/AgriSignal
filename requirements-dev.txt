@@ -3,3 +3,4 @@ black==26.10.1
 ipykernel==7.4.0
 matplotlib==3.11.2
 pytest==9.2.0
+shapely==2.2.0

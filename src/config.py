@@ -17,8 +17,8 @@ DB_PATH = PROJECT_ROOT / "db" / "agrisignal.db"
 FIGURES_DIR = PROJECT_ROOT / "reports" / "figures"
 SCHEMA_SQL = PROJECT_ROOT / "sql" / "schema.sql"
 
-# SQLite by default. Set DATABASE_URL in .env to use another database,
-# e.g. postgresql+psycopg://user:password@localhost:5432/agrisignal
+# SQLite by default. DATABASE_URL in .env can point SQLAlchemy at another
+# database, but only SQLite has been tested.
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DB_PATH.as_posix()}")
 
 COUNTRY = "India"

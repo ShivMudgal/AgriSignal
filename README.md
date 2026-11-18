@@ -2,9 +2,9 @@
 
 Can satellite pictures of crops predict where Indian grain prices go next? AgriSignal measures crop health from space in 329 districts across India's main wheat and rice states, combines it with weather and government data, and tests whether that helps predict if all-India wheat and paddy prices will rise over the next 1 to 3 months.
 
-![Crop health in March 2022](reports/figures/crop_health_march_2022.png)
+![Heat and crop health in March 2022](reports/figures/heatwave_march_2022.png)
 
-*March 2022, during an early heatwave just before the wheat harvest: parts of the wheat belt, especially Haryana and western Uttar Pradesh, were browner than in the same month of nearby years. The heat mostly shrank the grain rather than browning the leaves, so the damage looks milder from space than it was in the fields. Wheat prices rose 3.2% that month, and wheat exports were banned in May.*
+*March 2022, just before the wheat harvest: an early heatwave pushed the hottest temperatures up to 3 degrees above nearby years across Punjab, Haryana, Rajasthan and western Uttar Pradesh (left). The crops browned most in Haryana and western Uttar Pradesh (right). The heat mostly shrank the grain rather than browning the leaves, so the damage looks milder from space than it was in the fields. Wheat prices rose 3.2% that month, and wheat exports were banned in May.*
 
 ## What I found
 
@@ -22,7 +22,7 @@ The full write-up is in [reports/report.md](reports/report.md).
 
 1. **Satellite and weather data.** Monthly crop health (NDVI from NASA's MODIS Terra and Aqua satellites, cropland only, cloudy pixels removed), rainfall (CHIRPS) and temperature (ERA5-Land) for every district, extracted with Google Earth Engine.
 2. **Prices and policy.** All-India wholesale price indices for wheat and paddy (three official series joined into one), plus overall and food inflation, diesel prices, government grain stocks, minimum support prices, and the dates of export bans and stock limits.
-3. **Cleaning and a database.** Non-farm districts are dropped, unreliable values are filled and flagged, and everything is loaded into a SQL database (SQLite by default, PostgreSQL by changing one setting).
+3. **Cleaning and a database.** Non-farm districts are dropped, unreliable values are filled and flagged, and everything is loaded into a SQLite database through SQLAlchemy.
 4. **Exploration.** One national series per crop, weighting each district by its farmland, and a look at which signals move with later prices (`notebooks/01_eda.ipynb`).
 5. **Signal tests.** Leakage-free features, simple baseline rules and Granger causality tests (`notebooks/02_signal_tests.ipynb`).
 6. **Models.** Logistic regression and XGBoost, retrained every month on past data only and scored against the baselines (`notebooks/03_models.ipynb`).
@@ -62,7 +62,7 @@ src/                  data pipeline, features, models and figures
   baselines.py        simple rules the models must beat
   train_models.py     walk-forward model testing
   forecast.py         forecast from the latest data
-sql/schema.sql        database schema (SQLite and PostgreSQL)
+sql/schema.sql        database schema
 notebooks/            exploration, signal tests and model results
 dashboard/            Streamlit app
 data/raw/             extracted and collected data
@@ -118,4 +118,4 @@ Tests: `pytest tests`
 
 ## Tools
 
-Python, pandas, Google Earth Engine, SQLAlchemy with SQLite (PostgreSQL ready), statsmodels, scikit-learn, XGBoost, Plotly, Streamlit, pytest.
+Python, pandas, Google Earth Engine, SQLite with SQLAlchemy, statsmodels, scikit-learn, XGBoost, Plotly, Streamlit, pytest.

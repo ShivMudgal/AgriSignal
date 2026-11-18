@@ -1,4 +1,4 @@
--- AgriSignal database. Works on both SQLite and PostgreSQL.
+-- AgriSignal database (SQLite).
 -- Months are stored as the first day of the month, e.g. 2024-03-01.
 
 DROP VIEW IF EXISTS district_month;
