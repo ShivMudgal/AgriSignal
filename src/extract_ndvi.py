@@ -83,6 +83,15 @@ def state_csv_path(state: str) -> Path:
     return config.NDVI_STATE_DIR / f"{state.lower().replace(' ', '_')}.csv"
 
 
+def is_already_done(state: str, months: pd.DatetimeIndex) -> bool:
+    """True if the state's saved file covers exactly the months we need."""
+    path = state_csv_path(state)
+    if not path.exists():
+        return False
+    saved_months = set(pd.read_csv(path, usecols=["month"])["month"])
+    return saved_months == set(months.strftime("%Y-%m"))
+
+
 def extract_state(state: str, cropland: ee.Image, months: pd.DatetimeIndex) -> bool:
     """Extract all months for one state and save them. Returns True on success."""
     districts = get_districts(config.COUNTRY, state)
@@ -134,7 +143,7 @@ def main() -> None:
 
     incomplete = []
     for state in config.STUDY_STATES:
-        if state_csv_path(state).exists():
+        if is_already_done(state, months):
             print(f"  {state}: already done, skipping")
             continue
         if not extract_state(state, cropland, months):

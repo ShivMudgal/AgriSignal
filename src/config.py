@@ -36,7 +36,7 @@ RICE_STATES = [
 STUDY_STATES = sorted(set(WHEAT_STATES + RICE_STATES))
 
 # Monthly data window for every source. The end date is exclusive.
-START_DATE = "2018-01-01"
+START_DATE = "2005-01-01"
 END_DATE = "2026-10-01"
 
 NDVI_STATE_DIR = RAW_DATA_DIR / "ndvi"
