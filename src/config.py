@@ -46,6 +46,7 @@ WPI_DOWNLOAD_DIR = RAW_DATA_DIR / "wpi"
 WPI_CSV = RAW_DATA_DIR / "wpi_monthly.csv"
 NDVI_CLEAN_CSV = PROCESSED_DATA_DIR / "ndvi_clean.csv"
 RAINFALL_CLEAN_CSV = PROCESSED_DATA_DIR / "rainfall_clean.csv"
+NATIONAL_CSV = PROCESSED_DATA_DIR / "national_monthly.csv"
 
 # Districts that are almost all city or have no usable cropland.
 EXCLUDED_DISTRICTS = ["Kolkata", "Hyderabad", "Disputed (Ratlam & Mandsaur)"]
