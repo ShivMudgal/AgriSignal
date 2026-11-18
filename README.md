@@ -117,7 +117,7 @@ Logistic regression and XGBoost predict whether the price will be higher 1, 2 or
 - Wheat 1 and 2 months ahead: NDVI adds nothing; momentum and the calendar do the work.
 - Paddy: no model beats the simple rules. At 3 months, "always up" (75.3%) is significantly better than every model.
 
-In short: satellite crop health measurably improves 3-month wheat forecasts, but the gain over a well-chosen calendar rule is modest, and paddy prices are driven by the government's support price rather than crop conditions.
+In short: satellite crop health measurably improves 3-month wheat forecasts, but the gain over a well-chosen calendar rule is modest, and paddy prices, which rise steadily, seem shaped more by government buying at the support price than by crop conditions.
 
 ## Known limitations
 
